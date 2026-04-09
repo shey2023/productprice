@@ -953,26 +953,45 @@ function updateCalcPreview() {
     "</span>";
 }
 
-/* ── מחירי מתכות (התייחסות בלבד) ── */
+/* ── מחירי מתכות (שוק, התייחסות בלבד) ── */
+const METAL_POLL_MS = 3 * 60 * 1000;
+const METAL_FETCH_MS = 14000;
+const METAL_FAIL_MAX = 5;
+
+/** @type {number|null} */
+let metalPollTimer = null;
+let metalSpotDisabled = false;
+let metalFailStreak = 0;
+
+async function fetchJsonWithTimeout(url, ms = METAL_FETCH_MS) {
+  const ctl = new AbortController();
+  const t = setTimeout(() => ctl.abort(), ms);
+  try {
+    const res = await fetch(url, { cache: "no-store", signal: ctl.signal });
+    if (!res.ok) return null;
+    return await res.json();
+  } catch {
+    return null;
+  } finally {
+    clearTimeout(t);
+  }
+}
+
 async function fetchSpotUsdPerOz(metal) {
   const urls = {
     gold: "https://api.metals.live/v1/spot/gold",
     silver: "https://api.metals.live/v1/spot/silver",
     platinum: "https://api.metals.live/v1/spot/platinum",
   };
-  const u = urls[metal];
+  const u = urls[/** @type {keyof typeof urls} */ (metal)];
   if (!u) return null;
-  const res = await fetch(u, { cache: "no-store" });
-  if (!res.ok) return null;
-  const data = await res.json();
+  const data = await fetchJsonWithTimeout(u);
   if (Array.isArray(data) && data.length && typeof data[0][1] === "number") return data[0][1];
   return null;
 }
 
 async function fetchUsdIls() {
-  const res = await fetch("https://api.frankfurter.app/latest?from=USD&to=ILS", { cache: "no-store" });
-  if (!res.ok) return null;
-  const data = await res.json();
+  const data = await fetchJsonWithTimeout("https://api.frankfurter.app/latest?from=USD&to=ILS");
   const v = data && data.rates && data.rates.ILS;
   return typeof v === "number" ? v : null;
 }
@@ -982,16 +1001,31 @@ function ilsPerGramFromSpotUsdOz(usdPerOz, purityFactor) {
   return usdPerGram * purityFactor;
 }
 
+function stopMetalSpotPolling() {
+  if (metalPollTimer != null) {
+    clearInterval(metalPollTimer);
+    metalPollTimer = null;
+  }
+}
+
+function disableMetalSpotFeature() {
+  metalSpotDisabled = true;
+  stopMetalSpotPolling();
+  window.__spotRef = undefined;
+  $("goldBar").classList.add("hidden");
+}
+
 async function refreshMetalPrices() {
+  if (metalSpotDisabled) return;
   const box = $("gbPrices");
   box.innerHTML = "<span class=\"gb-msg\">טוען...</span>";
   $("gbTime").textContent = "";
   try {
     const [usdIls, au, ag, pt] = await Promise.all([
       fetchUsdIls(),
-      fetchSpotUsdOz("gold"),
-      fetchSpotUsdOz("silver"),
-      fetchSpotUsdOz("platinum"),
+      fetchSpotUsdPerOz("gold"),
+      fetchSpotUsdPerOz("silver"),
+      fetchSpotUsdPerOz("platinum"),
     ]);
     if (!usdIls) throw new Error("שער");
 
@@ -999,6 +1033,8 @@ async function refreshMetalPrices() {
     const g18 = au != null ? ilsPerGramFromSpotUsdOz(au, 18 / 24) * usdIls : null;
     const sv = ag != null ? ilsPerGramFromSpotUsdOz(ag, 0.925) * usdIls : null;
     const pl = pt != null ? ilsPerGramFromSpotUsdOz(pt, 0.95) * usdIls : null;
+
+    metalFailStreak = 0;
 
     box.replaceChildren();
     const add = (metal, val, note) => {
@@ -1018,10 +1054,14 @@ async function refreshMetalPrices() {
     add("כסף 925", sv, "");
     add("פלטינה", pl, "");
 
-    $("gbTime").textContent = "עודכן " + new Date().toLocaleTimeString("he-IL", { hour: "2-digit", minute: "2-digit" });
+    const tStr = new Date().toLocaleTimeString("he-IL", { hour: "2-digit", minute: "2-digit" });
+    $("gbTime").textContent = "עודכן " + tStr + " · רענון אוטומטי כל " + METAL_POLL_MS / 60000 + " דק׳";
     window.__spotRef = { g14, g18, sv, pl, usdIls };
   } catch {
+    metalFailStreak++;
     box.innerHTML = "<span class=\"gb-msg\">לא ניתן לטעון מחירי שוק — הזן ידנית</span>";
+    $("gbTime").textContent = "";
+    if (metalFailStreak >= METAL_FAIL_MAX) disableMetalSpotFeature();
   }
 }
 
@@ -1043,7 +1083,7 @@ function applySpotToCurrentMetal() {
 
 /* ── אתחול ── */
 const manifest = {
-  name: "שיי (Shey) · מחשבון הצעת מחיר",
+  name: "Shey · מחשבון הצעת מחיר",
   short_name: "Shey",
   description: "מחשבון הצעות מחיר לתכשיטים — מתכת, אבנים ועבודה.",
   start_url: ".",
@@ -1260,5 +1300,6 @@ renderDynCosts();
 renderGemRows();
 updateProfitUI(parseFloat($("profit").value) || 30);
 renderHist();
+metalPollTimer = setInterval(() => refreshMetalPrices(), METAL_POLL_MS);
 refreshMetalPrices();
 scheduleCalc();
