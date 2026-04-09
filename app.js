@@ -1043,20 +1043,19 @@ function applySpotToCurrentMetal() {
 
 /* ── אתחול ── */
 const manifest = {
-  name: "מחשבון תכשיט",
-  short_name: "תכשיט",
+  name: "שיי (Shey) · מחשבון הצעת מחיר",
+  short_name: "Shey",
+  description: "מחשבון הצעות מחיר לתכשיטים — מתכת, אבנים ועבודה.",
   start_url: ".",
   display: "standalone",
   background_color: "#F4F2EE",
   theme_color: "#D4537E",
   orientation: "portrait",
+  lang: "he",
+  dir: "rtl",
   icons: [
     {
-      src:
-        "data:image/svg+xml," +
-        encodeURIComponent(
-          '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><rect width="100" height="100" rx="20" fill="#D4537E"/><text y="72" x="50" text-anchor="middle" font-size="60">💍</text></svg>'
-        ),
+      src: "images/Red-Symbol.svg",
       sizes: "any",
       type: "image/svg+xml",
     },
