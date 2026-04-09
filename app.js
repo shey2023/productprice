@@ -420,6 +420,96 @@ function renderRes(r) {
     diff > 0.5 ? "עיגול מעלה את המחיר ב־" + fmt(diff) + " לנוחות תמחור" : "";
 }
 
+/**
+ * פירוט עלויות מלא ל-PDF פנימי (תואם ללוח התוצאות).
+ * @param {(lab: string, val: string, sub?: boolean) => void} addPdfRow
+ * @param {ReturnType<typeof calc>} r
+ */
+function renderInternalPdfCostBreakdown(r, addPdfRow) {
+  addPdfRow("מתכת (" + MLBL[r.mt] + ")", fmt(r.mCost));
+  if (r.wt > 0) {
+    const wNote = r.wSrc === "calc" ? "משקל מחושב" : "משקל";
+    addPdfRow(wNote + " · " + fmtN(r.wt, 2) + " גרם · " + fmtN(r.ppg, 2) + " ₪/ג׳", fmt(r.mCost), true);
+  }
+
+  if (r.diaCost > 0) {
+    addPdfRow("יהלומים", fmt(r.diaCost));
+    if (r.diaMode === "uni") {
+      addPdfRow(
+        r.diaCount +
+          " אבנים · סה״כ " +
+          fmtN(r.diaTotalCt, 3) +
+          " קראט · " +
+          fmtN(r.diaPrice, 0) +
+          " ₪/קראט",
+        "—",
+        true
+      );
+    } else {
+      const l1 = r.diaG1Ct * r.diaG1Price;
+      const l2 = r.diaG2Ct * r.diaG2Price;
+      if (l1 > 0) {
+        addPdfRow(
+          "קבוצה 1 (מרכזית) · " +
+            r.diaG1Count +
+            " · " +
+            fmtN(r.diaG1Ct, 3) +
+            " קראט · " +
+            fmtN(r.diaG1Price, 0) +
+            " ₪/קראט",
+          fmt(l1),
+          true
+        );
+      }
+      if (l2 > 0) {
+        addPdfRow(
+          "קבוצה 2 (צדדיות) · " +
+            r.diaG2Count +
+            " · " +
+            fmtN(r.diaG2Ct, 3) +
+            " קראט · " +
+            fmtN(r.diaG2Price, 0) +
+            " ₪/קראט",
+          fmt(l2),
+          true
+        );
+      }
+      if (r.diaCombinedCt > 0) {
+        addPdfRow("סה״כ משקל (Combined CT)", fmtN(r.diaCombinedCt, 3) + " קראט", true);
+      }
+    }
+  }
+
+  if (r.gemTotal > 0) {
+    addPdfRow("אבני חן (סה״כ)", fmt(r.gemTotal));
+    r.gemStones.forEach((g) => {
+      const line = (g.count || 0) * (g.carat || 0) * (g.price || 0);
+      if (line <= 0) return;
+      const name = (g.label || "אבן").trim() || "אבן";
+      addPdfRow(name, fmt(line), true);
+    });
+  }
+
+  if (r.settingCost > 0) addPdfRow("שיבוץ", fmt(r.settingCost));
+
+  const labLines = [
+    ["אריזה", r.lPack],
+    ["הדפסה", r.lc],
+    ["מודל 3D", r.lModel],
+    ["ליטוש", r.lp],
+    ["ציפוי", r.lr],
+  ];
+  labLines.forEach(([name, amt]) => {
+    if (amt > 0) addPdfRow(name, fmt(amt));
+  });
+
+  r.dynCosts.forEach((c) => {
+    if ((c.amount || 0) > 0) addPdfRow(c.label || "עלות", fmt(c.amount));
+  });
+
+  if (r.complexity > 0) addPdfRow("תוספת מורכבות", fmt(r.complexity));
+}
+
 function buildCopyText(r) {
   const name = ($("clientName").value || "").trim();
   const lines = [];
@@ -497,27 +587,39 @@ function openPdf(mode) {
     const addPdfRow = (lab, val, sub) => {
       const row = document.createElement("div");
       row.className = "pdf-row" + (sub ? " sub" : "");
-      row.innerHTML = "<span class=\"pdf-row-label\">" + lab + "</span><span class=\"pdf-row-value\">" + val + "</span>";
+      row.innerHTML =
+        "<span class=\"pdf-row-label\">" +
+        escapeHtml(String(lab)) +
+        "</span><span class=\"pdf-row-value\">" +
+        escapeHtml(String(val)) +
+        "</span>";
       pdfRows.appendChild(row);
     };
 
-    addPdfRow("מתכת", fmt(r.mCost));
-    if (r.diaCost > 0) addPdfRow("יהלומים", fmt(r.diaCost), true);
-    if (r.gemTotal > 0) addPdfRow("אבני חן", fmt(r.gemTotal), true);
-    if (r.settingCost > 0) addPdfRow("שיבוץ", fmt(r.settingCost), true);
-    const laborEx = r.lTot - r.complexity;
-    if (laborEx > 0) addPdfRow("עבודה ושירותים", fmt(laborEx), true);
-    if (r.complexity > 0) addPdfRow("תוספת מורכבות", fmt(r.complexity), true);
+    renderInternalPdfCostBreakdown(r, addPdfRow);
+
+    const pnotes = ($("privateNotes").value || "").trim();
+    if (pnotes) addPdfRow("הערות פנימיות", pnotes, false);
 
     pdfTotals.replaceChildren();
     const addTot = (lab, val, sub) => {
       const row = document.createElement("div");
       row.className = "pdf-row" + (sub ? " sub" : "");
-      row.innerHTML = "<span class=\"pdf-row-label\">" + lab + "</span><span class=\"pdf-row-value\">" + val + "</span>";
+      row.innerHTML =
+        "<span class=\"pdf-row-label\">" +
+        escapeHtml(String(lab)) +
+        "</span><span class=\"pdf-row-value\">" +
+        escapeHtml(String(val)) +
+        "</span>";
       pdfTotals.appendChild(row);
     };
-    addTot("סה״כ לפני רווח", fmt(r.sub));
+    addTot("עלות כוללת (לפני רווח)", fmt(r.sub));
     addTot("רווח " + r.pct + "%", fmt(r.prof), true);
+    addTot("מחיר לפני עיגול", fmt(r.final), true);
+    const diffR = rounded - r.final;
+    if (Math.abs(diffR) > 0.5) {
+      addTot("הפרש עיגול (מעוגל − לפני עיגול)", fmt(diffR), true);
+    }
   }
 
   overlay.classList.add("show");
