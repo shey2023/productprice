@@ -107,7 +107,6 @@ body {
   margin-right: auto;
 }
 
-/* ── Gold bar ── */
 /* ── Brand (Shey) ── */
 .app-brand {
   display: flex;
@@ -147,84 +146,6 @@ body {
   margin: 0;
   font-size: 11px;
   color: #777;
-}
-
-.gold-bar {
-  background: var(--card);
-  border-bottom: 1px solid var(--border);
-  padding: 8px 16px;
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  flex-wrap: wrap;
-  position: sticky;
-  top: 0;
-  z-index: 50;
-}
-
-.gb-label {
-  color: #ba7517;
-  font-weight: 500;
-  font-size: 11px;
-  white-space: nowrap;
-}
-
-.gb-prices {
-  display: flex;
-  gap: 10px;
-  flex-wrap: wrap;
-  align-items: center;
-  flex: 1;
-}
-
-.gp-item {
-  display: flex;
-  align-items: center;
-  gap: 4px;
-}
-
-.gp-metal {
-  color: #666;
-  font-size: 11px;
-}
-
-.gp-val {
-  color: #1a1a1a;
-  font-size: 12px;
-  font-weight: 500;
-}
-
-.gp-btn {
-  background: var(--gold-bg);
-  border: 1px solid #ef9f27;
-  color: var(--gold-text);
-  border-radius: 4px;
-  padding: 2px 7px;
-  font-size: 10px;
-  cursor: pointer;
-  font-family: inherit;
-}
-
-.gp-btn:hover {
-  background: #fac775;
-}
-
-.gp-btn:focus-visible {
-  outline: none;
-  box-shadow: var(--focus-ring);
-}
-
-.gb-time {
-  color: #aaa;
-  font-size: 10px;
-  margin-right: auto;
-  white-space: nowrap;
-}
-
-.gb-msg {
-  color: #aaa;
-  font-size: 11px;
-  font-style: italic;
 }
 
 /* ── Layout ── */

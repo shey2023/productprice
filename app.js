@@ -16,7 +16,6 @@ const RDIAM = {
   21: 20.4, 22: 20.7, 23: 21.1, 24: 21.5, 25: 21.9, 26: 22.2, 27: 22.6, 28: 23, 29: 23.4, 30: 23.7,
   31: 24.1, 32: 24.5, 33: 24.9, 34: 25.2, 35: 25.6, 36: 26,
 };
-const TROY = 31.1035;
 const HK = "jc_hist_v2";
 
 /** @type {'ring'|'pendant'|'bracelet'|'earrings'} */
@@ -953,134 +952,6 @@ function updateCalcPreview() {
     "</span>";
 }
 
-/* ── מחירי מתכות (שוק, התייחסות בלבד) ── */
-const METAL_POLL_MS = 3 * 60 * 1000;
-const METAL_FETCH_MS = 14000;
-const METAL_FAIL_MAX = 5;
-
-/** @type {number|null} */
-let metalPollTimer = null;
-let metalSpotDisabled = false;
-let metalFailStreak = 0;
-
-async function fetchJsonWithTimeout(url, ms = METAL_FETCH_MS) {
-  const ctl = new AbortController();
-  const t = setTimeout(() => ctl.abort(), ms);
-  try {
-    const res = await fetch(url, { cache: "no-store", signal: ctl.signal });
-    if (!res.ok) return null;
-    return await res.json();
-  } catch {
-    return null;
-  } finally {
-    clearTimeout(t);
-  }
-}
-
-async function fetchSpotUsdPerOz(metal) {
-  const urls = {
-    gold: "https://api.metals.live/v1/spot/gold",
-    silver: "https://api.metals.live/v1/spot/silver",
-    platinum: "https://api.metals.live/v1/spot/platinum",
-  };
-  const u = urls[/** @type {keyof typeof urls} */ (metal)];
-  if (!u) return null;
-  const data = await fetchJsonWithTimeout(u);
-  if (Array.isArray(data) && data.length && typeof data[0][1] === "number") return data[0][1];
-  return null;
-}
-
-async function fetchUsdIls() {
-  const data = await fetchJsonWithTimeout("https://api.frankfurter.app/latest?from=USD&to=ILS");
-  const v = data && data.rates && data.rates.ILS;
-  return typeof v === "number" ? v : null;
-}
-
-function ilsPerGramFromSpotUsdOz(usdPerOz, purityFactor) {
-  const usdPerGram = usdPerOz / TROY;
-  return usdPerGram * purityFactor;
-}
-
-function stopMetalSpotPolling() {
-  if (metalPollTimer != null) {
-    clearInterval(metalPollTimer);
-    metalPollTimer = null;
-  }
-}
-
-function disableMetalSpotFeature() {
-  metalSpotDisabled = true;
-  stopMetalSpotPolling();
-  window.__spotRef = undefined;
-  $("goldBar").classList.add("hidden");
-}
-
-async function refreshMetalPrices() {
-  if (metalSpotDisabled) return;
-  const box = $("gbPrices");
-  box.innerHTML = "<span class=\"gb-msg\">טוען...</span>";
-  $("gbTime").textContent = "";
-  try {
-    const [usdIls, au, ag, pt] = await Promise.all([
-      fetchUsdIls(),
-      fetchSpotUsdPerOz("gold"),
-      fetchSpotUsdPerOz("silver"),
-      fetchSpotUsdPerOz("platinum"),
-    ]);
-    if (!usdIls) throw new Error("שער");
-
-    const g14 = au != null ? ilsPerGramFromSpotUsdOz(au, 14 / 24) * usdIls : null;
-    const g18 = au != null ? ilsPerGramFromSpotUsdOz(au, 18 / 24) * usdIls : null;
-    const sv = ag != null ? ilsPerGramFromSpotUsdOz(ag, 0.925) * usdIls : null;
-    const pl = pt != null ? ilsPerGramFromSpotUsdOz(pt, 0.95) * usdIls : null;
-
-    metalFailStreak = 0;
-
-    box.replaceChildren();
-    const add = (metal, val, note) => {
-      const wrap = document.createElement("span");
-      wrap.className = "gp-item";
-      wrap.innerHTML =
-        "<span class=\"gp-metal\">" +
-        metal +
-        '</span><span class="gp-val">' +
-        (val != null ? fmt(val, 0) + " /ג׳" : "—") +
-        "</span>" +
-        (note ? "<span class=\"gp-metal\">" + note + "</span>" : "");
-      box.appendChild(wrap);
-    };
-    add("זהב 14K", g14, "");
-    add("זהב 18K", g18, "");
-    add("כסף 925", sv, "");
-    add("פלטינה", pl, "");
-
-    const tStr = new Date().toLocaleTimeString("he-IL", { hour: "2-digit", minute: "2-digit" });
-    $("gbTime").textContent = "עודכן " + tStr + " · רענון אוטומטי כל " + METAL_POLL_MS / 60000 + " דק׳";
-    window.__spotRef = { g14, g18, sv, pl, usdIls };
-  } catch {
-    metalFailStreak++;
-    box.innerHTML = "<span class=\"gb-msg\">לא ניתן לטעון מחירי שוק — הזן ידנית</span>";
-    $("gbTime").textContent = "";
-    if (metalFailStreak >= METAL_FAIL_MAX) disableMetalSpotFeature();
-  }
-}
-
-function applySpotToCurrentMetal() {
-  const ref = window.__spotRef;
-  if (!ref) return;
-  const mt = $("metalType").value;
-  let v = null;
-  if (mt === "gold14") v = ref.g14;
-  if (mt === "gold18") v = ref.g18;
-  if (mt === "silver") v = ref.sv;
-  if (mt === "platinum") v = ref.pl;
-  if (v != null) {
-    $("pricePg").value = String(Math.round(v * 100) / 100);
-    scheduleCalc();
-    setFb("הוזן מחיר שוק משוער ל" + MLBL[mt], true);
-  }
-}
-
 /* ── אתחול ── */
 const manifest = {
   name: "Shey · מחשבון הצעת מחיר",
@@ -1193,11 +1064,6 @@ $("tabC").addEventListener("click", () => {
   });
 });
 
-$("metalType").addEventListener("change", () => {
-  const cur = parseFloat($("pricePg").value);
-  if (!cur) applySpotToCurrentMetal();
-});
-
 $("diaTabUni").addEventListener("click", () => {
   setDiaMode("uni");
   scheduleCalc();
@@ -1293,13 +1159,9 @@ $("btnClrHist").addEventListener("click", () => {
   }
 });
 
-$("btnRefreshMetals").addEventListener("click", () => refreshMetalPrices());
-
 updateRingUi();
 renderDynCosts();
 renderGemRows();
 updateProfitUI(parseFloat($("profit").value) || 30);
 renderHist();
-metalPollTimer = setInterval(() => refreshMetalPrices(), METAL_POLL_MS);
-refreshMetalPrices();
 scheduleCalc();
