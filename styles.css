@@ -257,6 +257,24 @@ body {
   gap: 6px;
 }
 
+.jew-tiles {
+  grid-template-columns: repeat(5, 1fr);
+}
+
+@media (max-width: 560px) {
+  .jew-tiles {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+.jew-other-wrap {
+  margin-top: 12px;
+}
+
+.jew-other-wrap .lbl {
+  margin-bottom: 6px;
+}
+
 .tile {
   appearance: none;
   -webkit-appearance: none;

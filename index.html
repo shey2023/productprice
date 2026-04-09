@@ -40,11 +40,16 @@
         <div class="sdot dp" aria-hidden="true">1</div>
         <span class="ct">סוג תכשיט</span>
       </div>
-      <div class="tiles" id="jewTiles" role="group" aria-label="בחירת סוג תכשיט">
+      <div class="tiles jew-tiles" id="jewTiles" role="group" aria-label="בחירת סוג תכשיט">
         <button type="button" class="tile sel" data-val="ring" aria-pressed="true"><span class="tile-ic" aria-hidden="true">💍</span><span class="tile-lbl">טבעת</span></button>
         <button type="button" class="tile" data-val="pendant" aria-pressed="false"><span class="tile-ic" aria-hidden="true">📿</span><span class="tile-lbl">תליון</span></button>
         <button type="button" class="tile" data-val="bracelet" aria-pressed="false"><span class="tile-ic" aria-hidden="true">⌚</span><span class="tile-lbl">צמיד</span></button>
         <button type="button" class="tile" data-val="earrings" aria-pressed="false"><span class="tile-ic" aria-hidden="true">✦</span><span class="tile-lbl">עגילים</span></button>
+        <button type="button" class="tile" data-val="other" aria-pressed="false"><span class="tile-ic" aria-hidden="true">✎</span><span class="tile-lbl">אחר</span></button>
+      </div>
+      <div id="jewOtherWrap" class="jew-other-wrap hidden">
+        <label class="lbl" for="jewTypeOther">תיאור התכשיט</label>
+        <input id="jewTypeOther" class="inp" type="text" placeholder="למשל: שרשרת, אות, אבזם…" maxlength="120" autocomplete="off"/>
       </div>
     </div>
 

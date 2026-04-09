@@ -9,7 +9,7 @@
 
 const DENS = { gold14: 13.1, gold18: 15.6, silver: 10.49, platinum: 21.45 };
 const MLBL = { gold14: "זהב 14K", gold18: "זהב 18K", silver: "כסף", platinum: "פלטינה" };
-const JLBL = { ring: "טבעת", pendant: "תליון", bracelet: "צמיד", earrings: "עגילים" };
+const JLBL = { ring: "טבעת", pendant: "תליון", bracelet: "צמיד", earrings: "עגילים", other: "אחר" };
 const RDIAM = {
   1: 12.8, 2: 13.2, 3: 13.5, 4: 13.9, 5: 14.3, 6: 14.7, 7: 15.1, 8: 15.4, 9: 15.8, 10: 16.2,
   11: 16.6, 12: 16.9, 13: 17.3, 14: 17.7, 15: 18.1, 16: 18.5, 17: 18.8, 18: 19.2, 19: 19.6, 20: 20,
@@ -18,8 +18,21 @@ const RDIAM = {
 };
 const HK = "jc_hist_v2";
 
-/** @type {'ring'|'pendant'|'bracelet'|'earrings'} */
+/** @type {'ring'|'pendant'|'bracelet'|'earrings'|'other'} */
 let jewType = "ring";
+
+function jewLabel() {
+  if (jewType === "other") {
+    const t = ($("jewTypeOther").value || "").trim();
+    return t || JLBL.other;
+  }
+  return JLBL[jewType] || JLBL.ring;
+}
+
+function updateJewOtherUi() {
+  const on = jewType === "other";
+  $("jewOtherWrap").classList.toggle("hidden", !on);
+}
 let useCalc = false;
 /** @type {ReturnType<typeof calc>|null} */
 let lastRes = null;
@@ -512,7 +525,7 @@ function renderInternalPdfCostBreakdown(r, addPdfRow) {
 function buildCopyText(r) {
   const name = ($("clientName").value || "").trim();
   const lines = [];
-  lines.push("הצעת מחיר — " + JLBL[jewType]);
+  lines.push("הצעת מחיר — " + jewLabel());
   if (name) lines.push("לקוח: " + name);
   lines.push("מחיר סופי: " + fmt(smartRound(r.final)));
   lines.push("--- פנימי ---");
@@ -533,9 +546,9 @@ function openPdf(mode) {
   const overlay = $("pdfOverlay");
   const clientName = ($("clientName").value || "").trim() || "לקוח";
   const clientDesc = ($("clientDesc").value || "").trim();
-  $("pdfTitle").textContent = JLBL[jewType];
+  $("pdfTitle").textContent = jewLabel();
   $("pdfClient").textContent = clientName;
-  $("pdfType").textContent = MLBL[r.mt] + " · " + JLBL[jewType];
+  $("pdfType").textContent = MLBL[r.mt] + " · " + jewLabel();
 
   const now = new Date();
   $("pdfDate").textContent = now.toLocaleDateString("he-IL", {
@@ -563,7 +576,8 @@ function openPdf(mode) {
     descEl.textContent = clientDesc;
     const row = document.createElement("div");
     row.className = "pdf-row";
-    row.innerHTML = "<span class=\"pdf-row-label\">סוג תכשיט</span><span class=\"pdf-row-value\">" + JLBL[jewType] + "</span>";
+    row.innerHTML =
+      "<span class=\"pdf-row-label\">סוג תכשיט</span><span class=\"pdf-row-value\">" + escapeHtml(jewLabel()) + "</span>";
     pdfRows.appendChild(row);
     const row2 = document.createElement("div");
     row2.className = "pdf-row";
@@ -715,7 +729,7 @@ function loadQuote(id) {
   const item = list.find((x) => x.id === id);
   if (!item || !item.payload) return;
   const p = item.payload;
-  jewType = p.jewType || "ring";
+  jewType = ["ring", "pendant", "bracelet", "earrings", "other"].includes(p.jewType) ? p.jewType : "ring";
   document.querySelectorAll("#jewTiles .tile").forEach((t) => {
     const on = t.getAttribute("data-val") === jewType;
     t.classList.toggle("sel", on);
@@ -766,11 +780,13 @@ function loadQuote(id) {
   $("clientName").value = p.clientName ?? "";
   $("clientDesc").value = p.clientDesc ?? "";
   $("privateNotes").value = p.privateNotes ?? "";
+  $("jewTypeOther").value = p.jewOther ?? "";
   dynCosts = Array.isArray(p.dynCosts) ? p.dynCosts.map((c) => ({ ...c, id: c.id || uid() })) : [];
   gemStones = Array.isArray(p.gemStones) ? p.gemStones.map((g) => ({ ...g, id: g.id || uid() })) : [];
   renderDynCosts();
   renderGemRows();
   updateRingUi();
+  updateJewOtherUi();
   scheduleCalc();
   setFb("הצעה נטענה מההיסטוריה", true);
 }
@@ -816,6 +832,7 @@ function saveQuote() {
     clientName: $("clientName").value,
     clientDesc: $("clientDesc").value,
     privateNotes: $("privateNotes").value,
+    jewOther: $("jewTypeOther").value,
     dynCosts,
     gemStones,
   };
@@ -823,7 +840,7 @@ function saveQuote() {
     id: uid(),
     date: new Date().toLocaleString("he-IL"),
     client: ($("clientName").value || "").trim() || "ללא שם",
-    jewLabel: JLBL[jewType],
+    jewLabel: jewLabel(),
     metalLabel: MLBL[r.mt],
     total: smartRound(r.final),
     note: ($("privateNotes").value || "").trim().slice(0, 120),
@@ -997,6 +1014,7 @@ document.querySelectorAll("#jewTiles .tile").forEach((tile) => {
       t.setAttribute("aria-pressed", on ? "true" : "false");
     });
     updateRingUi();
+    updateJewOtherUi();
     scheduleCalc();
     updateCalcPreview();
   });
@@ -1056,6 +1074,7 @@ $("tabC").addEventListener("click", () => {
   "clientName",
   "clientDesc",
   "privateNotes",
+  "jewTypeOther",
 ].forEach((id) => {
   $(id).addEventListener("input", () => {
     if (id === "profit") updateProfitUI(parseFloat($("profit").value) || 0);
@@ -1111,6 +1130,7 @@ $("btnClr").addEventListener("click", () => {
   $("clientName").value = "";
   $("clientDesc").value = "";
   $("privateNotes").value = "";
+  $("jewTypeOther").value = "";
   dynCosts = [];
   gemStones = [];
   renderDynCosts();
@@ -1160,6 +1180,7 @@ $("btnClrHist").addEventListener("click", () => {
 });
 
 updateRingUi();
+updateJewOtherUi();
 renderDynCosts();
 renderGemRows();
 updateProfitUI(parseFloat($("profit").value) || 30);
