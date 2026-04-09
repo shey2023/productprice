@@ -102,10 +102,52 @@
       </div>
       <div class="stone-block">
         <div class="stone-block-title"><span aria-hidden="true">💎</span> יהלומים</div>
-        <div class="r3">
-          <div class="f"><label class="lbl" for="diaCount">כמות</label><input id="diaCount" class="inp" type="number" min="0" step="1" value="0" inputmode="numeric"/></div>
-          <div class="f"><label class="lbl" for="diaCarat">קראט/יהלום</label><input id="diaCarat" class="inp" type="number" min="0" step="0.01" value="0" inputmode="decimal"/></div>
-          <div class="f"><label class="lbl" for="diaPrice">₪/קראט</label><input id="diaPrice" class="inp" type="number" min="0" step="1" value="0" inputmode="numeric"/></div>
+        <p class="stone-lead">פירוט האבנים (למילוי מהיר)</p>
+        <div class="wtabs dia-mode-tabs" id="diaModeTabs" role="tablist" aria-label="מצב פירוט יהלומים">
+          <button type="button" class="wt on" id="diaTabUni" role="tab" aria-selected="true">אפשרות א׳ · גודל אחיד</button>
+          <button type="button" class="wt" id="diaTabMulti" role="tab" aria-selected="false">אפשרות ב׳ · מספר גדלים</button>
+        </div>
+        <p class="dia-mode-hint" id="diaHintUni">למשל צמיד טניס או עגילי סוליטר</p>
+        <p class="dia-mode-hint hidden" id="diaHintMulti">למשל אבן מרכזית + עיטור מסביב</p>
+
+        <div id="diaPanelUni" class="dia-panel">
+          <div class="r3">
+            <div class="f"><label class="lbl" for="diaCount">כמות אבנים</label><input id="diaCount" class="inp" type="number" min="0" step="1" value="0" inputmode="numeric"/></div>
+            <div class="f"><label class="lbl" for="diaTotalCt">סה״כ קראט</label><input id="diaTotalCt" class="inp" type="number" min="0" step="0.01" value="0" inputmode="decimal"/></div>
+            <div class="f"><label class="lbl" for="diaPrice">מחיר לקראט (₪)</label><input id="diaPrice" class="inp" type="number" min="0" step="1" value="0" inputmode="numeric"/></div>
+          </div>
+          <div class="dia-stones-total">
+            <span class="dia-stones-total-lbl"><strong>סה״כ לאבנים</strong></span>
+            <span class="dia-stones-total-val" id="diaUniSubtotal">₪0</span>
+          </div>
+        </div>
+
+        <div id="diaPanelMulti" class="dia-panel hidden">
+          <div class="dia-group">
+            <div class="dia-group-title">קבוצה 1 (מרכזית)</div>
+            <div class="r3 dia-group-row">
+              <div class="f"><label class="lbl" for="diaG1Count">כמות</label><input id="diaG1Count" class="inp" type="number" min="0" step="1" value="0" inputmode="numeric"/></div>
+              <div class="f"><label class="lbl" for="diaG1Ct">משקל (CT)</label><input id="diaG1Ct" class="inp" type="number" min="0" step="0.01" value="0" inputmode="decimal"/></div>
+              <div class="f"><label class="lbl" for="diaG1Price">מחיר לקראט (₪)</label><input id="diaG1Price" class="inp" type="number" min="0" step="1" value="0" inputmode="numeric"/></div>
+            </div>
+          </div>
+          <div class="dia-group dia-group-spaced">
+            <div class="dia-group-title">קבוצה 2 (צדדיות)</div>
+            <div class="r3 dia-group-row">
+              <div class="f"><label class="lbl" for="diaG2Count">כמות</label><input id="diaG2Count" class="inp" type="number" min="0" step="1" value="0" inputmode="numeric"/></div>
+              <div class="f"><label class="lbl" for="diaG2Ct">משקל (CT)</label><input id="diaG2Ct" class="inp" type="number" min="0" step="0.01" value="0" inputmode="decimal"/></div>
+              <div class="f"><label class="lbl" for="diaG2Price">מחיר לקראט (₪)</label><input id="diaG2Price" class="inp" type="number" min="0" step="1" value="0" inputmode="numeric"/></div>
+            </div>
+          </div>
+          <div class="dia-combined-row">
+            <span class="lbl dia-combined-lbl">סה״כ משקל (Combined CT)</span>
+            <span class="dia-combined-val" id="diaCombinedCtDisp">0</span>
+          </div>
+        </div>
+
+        <div class="dia-client-tip" id="diaClientTip">
+          <div class="dia-client-tip-title">איך להשתמש בזה מול הלקוח?</div>
+          <p class="dia-client-tip-txt" id="diaClientLine">מלאו כמות, סה״כ קראט ומחיר לקראט — כאן יופיע ניסוח קצר להעתקה.</p>
         </div>
       </div>
       <div class="hr-line"></div>

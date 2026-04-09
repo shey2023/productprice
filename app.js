@@ -33,6 +33,8 @@ let calcTimer = null;
 let deferredPrompt = null;
 /** @type {'client'|'internal'} */
 let pdfMode = "client";
+/** @type {'uni'|'multi'} */
+let diaMode = "uni";
 
 const $ = (id) => {
   const el = document.getElementById(id);
@@ -82,9 +84,22 @@ function calc() {
   const mCost = wt * ppg;
 
   const diaCount = parseInt($("diaCount").value, 10) || 0;
-  const diaCarat = parseFloat($("diaCarat").value) || 0;
+  const diaTotalCt = parseFloat($("diaTotalCt").value) || 0;
   const diaPrice = parseFloat($("diaPrice").value) || 0;
-  const diaCost = diaCount * diaCarat * diaPrice;
+  const diaG1Count = parseInt($("diaG1Count").value, 10) || 0;
+  const diaG1Ct = parseFloat($("diaG1Ct").value) || 0;
+  const diaG1Price = parseFloat($("diaG1Price").value) || 0;
+  const diaG2Count = parseInt($("diaG2Count").value, 10) || 0;
+  const diaG2Ct = parseFloat($("diaG2Ct").value) || 0;
+  const diaG2Price = parseFloat($("diaG2Price").value) || 0;
+  const diaCombinedCt = diaG1Ct + diaG2Ct;
+
+  let diaCost = 0;
+  if (diaMode === "uni") {
+    diaCost = diaTotalCt * diaPrice;
+  } else {
+    diaCost = diaG1Ct * diaG1Price + diaG2Ct * diaG2Price;
+  }
 
   const gemTotal = gemStones.reduce((s, g) => s + (g.count || 0) * (g.carat || 0) * (g.price || 0), 0);
   const settingCost = parseFloat($("settingCost").value) || 0;
@@ -111,8 +126,17 @@ function calc() {
     rCirc,
     rVol,
     mCost,
+    diaMode,
     diaCount,
-    diaCarat,
+    diaTotalCt,
+    diaPrice,
+    diaG1Count,
+    diaG1Ct,
+    diaG1Price,
+    diaG2Count,
+    diaG2Ct,
+    diaG2Price,
+    diaCombinedCt,
     diaCost,
     gemTotal,
     gemStones: [...gemStones],
@@ -136,10 +160,61 @@ function calc() {
   };
 }
 
+function setDiaMode(mode) {
+  diaMode = mode;
+  const uni = mode === "uni";
+  $("diaTabUni").classList.toggle("on", uni);
+  $("diaTabMulti").classList.toggle("on", !uni);
+  $("diaTabUni").setAttribute("aria-selected", uni ? "true" : "false");
+  $("diaTabMulti").setAttribute("aria-selected", uni ? "false" : "true");
+  $("diaPanelUni").classList.toggle("hidden", !uni);
+  $("diaPanelMulti").classList.toggle("hidden", uni);
+  $("diaHintUni").classList.toggle("hidden", !uni);
+  $("diaHintMulti").classList.toggle("hidden", uni);
+}
+
+function updateDiaFormFeedback(r) {
+  $("diaUniSubtotal").textContent = fmt(r.diaMode === "uni" ? r.diaCost : 0);
+  $("diaCombinedCtDisp").textContent = fmtN(r.diaCombinedCt, 3);
+
+  const lineEl = $("diaClientLine");
+  if (r.diaMode === "uni") {
+    if (r.diaCount > 0 || r.diaTotalCt > 0 || r.diaPrice > 0) {
+      lineEl.textContent =
+        "התכשיט משובץ ב-" +
+        r.diaCount +
+        " אבנים, במשקל כולל של " +
+        fmtN(r.diaTotalCt, 3) +
+        " קראט.\nעלות לפי " +
+        fmtN(r.diaPrice, 0) +
+        " ₪ לקראט.";
+    } else {
+      lineEl.textContent = "מלאו כמות אבנים, סה״כ קראט ומחיר לקראט — כאן יופיע ניסוח קצר להעתקה.";
+    }
+  } else if (r.diaG1Ct > 0 || r.diaG2Ct > 0 || r.diaG1Price > 0 || r.diaG2Price > 0) {
+    lineEl.textContent =
+      "מרכזית: " +
+      fmtN(r.diaG1Ct, 3) +
+      " קראט (" +
+      fmtN(r.diaG1Price, 0) +
+      " ₪/קראט). צדדיות: " +
+      fmtN(r.diaG2Ct, 3) +
+      " קראט (" +
+      fmtN(r.diaG2Price, 0) +
+      " ₪/קראט).\nסה״כ משקל: " +
+      fmtN(r.diaCombinedCt, 3) +
+      " קראט.";
+  } else {
+    lineEl.textContent =
+      "מלאו משקל ומחיר לקראט לכל קבוצה — כאן יופיע ניסוח לפי שתי הקבוצות וסה״כ המשקל המשולב.";
+  }
+}
+
 function scheduleCalc() {
   clearTimeout(calcTimer);
   calcTimer = setTimeout(() => {
     const r = calc();
+    updateDiaFormFeedback(r);
     const hasData = r.mCost > 0 || r.stoneCost > 0 || r.lTot > 0;
     if (hasData) {
       lastRes = r;
@@ -246,6 +321,54 @@ function renderRes(r) {
 
   if (r.diaCost > 0) {
     bd.appendChild(mkDotRow("יהלומים", fmt(r.diaCost), "#3C3489", "cost"));
+    if (r.diaMode === "uni") {
+      bd.appendChild(
+        mkRow(
+          r.diaCount + " אבנים · סה״כ " + fmtN(r.diaTotalCt, 3) + " קראט · " + fmtN(r.diaPrice, 0) + " ₪/קראט",
+          "—",
+          true,
+          "cost"
+        )
+      );
+    } else {
+      const l1 = r.diaG1Ct * r.diaG1Price;
+      const l2 = r.diaG2Ct * r.diaG2Price;
+      if (l1 > 0) {
+        bd.appendChild(
+          mkRow(
+            "קבוצה 1 (מרכזית) · " +
+              r.diaG1Count +
+              " · " +
+              fmtN(r.diaG1Ct, 3) +
+              " קראט · " +
+              fmtN(r.diaG1Price, 0) +
+              " ₪/קראט",
+            fmt(l1),
+            true,
+            "cost"
+          )
+        );
+      }
+      if (l2 > 0) {
+        bd.appendChild(
+          mkRow(
+            "קבוצה 2 (צדדיות) · " +
+              r.diaG2Count +
+              " · " +
+              fmtN(r.diaG2Ct, 3) +
+              " קראט · " +
+              fmtN(r.diaG2Price, 0) +
+              " ₪/קראט",
+            fmt(l2),
+            true,
+            "cost"
+          )
+        );
+      }
+      if (r.diaCombinedCt > 0) {
+        bd.appendChild(mkRow("סה״כ משקל (Combined CT)", fmtN(r.diaCombinedCt, 3) + " קראט", true, "cost"));
+      }
+    }
   }
   if (r.gemTotal > 0) {
     bd.appendChild(mkDotRow("אבני חן (סה״כ)", fmt(r.gemTotal), "#3C3489", "cost"));
@@ -512,9 +635,25 @@ function loadQuote(id) {
   $("rSize").value = p.rSize ?? "";
   $("rWidth").value = p.rWidth ?? "";
   $("rThick").value = p.rThick ?? "";
-  $("diaCount").value = p.diaCount ?? 0;
-  $("diaCarat").value = p.diaCarat ?? 0;
-  $("diaPrice").value = p.diaPrice ?? 0;
+  setDiaMode(p.diaMode === "multi" ? "multi" : "uni");
+  $("diaCount").value = p.diaCount ?? "";
+  $("diaPrice").value = p.diaPrice ?? "";
+  const hasNewTotal = p.diaTotalCt != null && String(p.diaTotalCt).trim() !== "";
+  if (hasNewTotal) {
+    $("diaTotalCt").value = p.diaTotalCt;
+  } else if (p.diaCarat != null && String(p.diaCarat).trim() !== "") {
+    const c = parseInt(String(p.diaCount ?? "0"), 10) || 0;
+    const per = parseFloat(String(p.diaCarat)) || 0;
+    $("diaTotalCt").value = c && per ? String(c * per) : p.diaCarat;
+  } else {
+    $("diaTotalCt").value = p.diaTotalCt ?? "";
+  }
+  $("diaG1Count").value = p.diaG1Count ?? "";
+  $("diaG1Ct").value = p.diaG1Ct ?? "";
+  $("diaG1Price").value = p.diaG1Price ?? "";
+  $("diaG2Count").value = p.diaG2Count ?? "";
+  $("diaG2Ct").value = p.diaG2Ct ?? "";
+  $("diaG2Price").value = p.diaG2Price ?? "";
   $("settingCost").value = p.settingCost ?? 0;
   $("lPack").value = p.lPack ?? 0;
   $("lCast").value = p.lCast ?? 0;
@@ -555,9 +694,16 @@ function saveQuote() {
     rSize: $("rSize").value,
     rWidth: $("rWidth").value,
     rThick: $("rThick").value,
+    diaMode,
     diaCount: $("diaCount").value,
-    diaCarat: $("diaCarat").value,
+    diaTotalCt: $("diaTotalCt").value,
     diaPrice: $("diaPrice").value,
+    diaG1Count: $("diaG1Count").value,
+    diaG1Ct: $("diaG1Ct").value,
+    diaG1Price: $("diaG1Price").value,
+    diaG2Count: $("diaG2Count").value,
+    diaG2Ct: $("diaG2Ct").value,
+    diaG2Price: $("diaG2Price").value,
     settingCost: $("settingCost").value,
     lPack: $("lPack").value,
     lCast: $("lCast").value,
@@ -879,8 +1025,14 @@ $("tabC").addEventListener("click", () => {
   "rWidth",
   "rThick",
   "diaCount",
-  "diaCarat",
+  "diaTotalCt",
   "diaPrice",
+  "diaG1Count",
+  "diaG1Ct",
+  "diaG1Price",
+  "diaG2Count",
+  "diaG2Ct",
+  "diaG2Price",
   "settingCost",
   "lPack",
   "lCast",
@@ -905,6 +1057,15 @@ $("metalType").addEventListener("change", () => {
   if (!cur) applySpotToCurrentMetal();
 });
 
+$("diaTabUni").addEventListener("click", () => {
+  setDiaMode("uni");
+  scheduleCalc();
+});
+$("diaTabMulti").addEventListener("click", () => {
+  setDiaMode("multi");
+  scheduleCalc();
+});
+
 $("btnAddCost").addEventListener("click", () => {
   dynCosts.push({ id: uid(), label: "", amount: 0 });
   renderDynCosts();
@@ -922,9 +1083,16 @@ $("btnClr").addEventListener("click", () => {
   $("rSize").value = "";
   $("rWidth").value = "";
   $("rThick").value = "";
+  setDiaMode("uni");
   $("diaCount").value = "0";
-  $("diaCarat").value = "0";
+  $("diaTotalCt").value = "0";
   $("diaPrice").value = "0";
+  $("diaG1Count").value = "0";
+  $("diaG1Ct").value = "0";
+  $("diaG1Price").value = "0";
+  $("diaG2Count").value = "0";
+  $("diaG2Ct").value = "0";
+  $("diaG2Price").value = "0";
   $("settingCost").value = "0";
   $("lPack").value = "0";
   $("lCast").value = "0";
@@ -943,6 +1111,7 @@ $("btnClr").addEventListener("click", () => {
   lastRes = null;
   $("resEmpty").classList.remove("hidden");
   $("resContent").classList.add("hidden");
+  scheduleCalc();
 });
 
 $("btnCopy").addEventListener("click", async () => {
@@ -991,3 +1160,4 @@ renderGemRows();
 updateProfitUI(parseFloat($("profit").value) || 30);
 renderHist();
 refreshMetalPrices();
+scheduleCalc();
