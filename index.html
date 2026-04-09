@@ -1,0 +1,292 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no"/>
+  <meta name="apple-mobile-web-app-capable" content="yes"/>
+  <meta name="apple-mobile-web-app-status-bar-style" content="default"/>
+  <meta name="apple-mobile-web-app-title" content="מחשבון תכשיט"/>
+  <meta name="mobile-web-app-capable" content="yes"/>
+  <meta name="theme-color" content="#D4537E"/>
+  <title>מחשבון תכשיט (פנימי)</title>
+  <link id="manifestLink" rel="manifest"/>
+  <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@300;400;500;600&display=swap" rel="stylesheet"/>
+  <link rel="stylesheet" href="styles.css"/>
+</head>
+<body>
+
+<div id="installBanner" class="install-banner" role="region" aria-label="התקנת אפליקציה">
+  <span aria-hidden="true">📱</span>
+  <span>הוסף למסך הבית לגישה מהירה</span>
+  <button type="button" class="btn-install" id="btnInstall">הוסף</button>
+  <button type="button" class="btn-install-dismiss" id="btnDismiss" aria-label="סגור">×</button>
+</div>
+
+<div class="gold-bar">
+  <span class="gb-label">◆ מחירי מתכות</span>
+  <div class="gb-prices" id="gbPrices"><span class="gb-msg">טוען...</span></div>
+  <button type="button" class="gp-btn" id="btnRefreshMetals" title="רענן מחירים">רענן</button>
+  <span class="gb-time" id="gbTime"></span>
+</div>
+
+<div class="layout">
+  <div class="form-col">
+
+    <div class="card">
+      <div class="card-head">
+        <div class="sdot dp" aria-hidden="true">1</div>
+        <span class="ct">סוג תכשיט</span>
+      </div>
+      <div class="tiles" id="jewTiles" role="group" aria-label="בחירת סוג תכשיט">
+        <button type="button" class="tile sel" data-val="ring" aria-pressed="true"><span class="tile-ic" aria-hidden="true">💍</span><span class="tile-lbl">טבעת</span></button>
+        <button type="button" class="tile" data-val="pendant" aria-pressed="false"><span class="tile-ic" aria-hidden="true">📿</span><span class="tile-lbl">תליון</span></button>
+        <button type="button" class="tile" data-val="bracelet" aria-pressed="false"><span class="tile-ic" aria-hidden="true">⌚</span><span class="tile-lbl">צמיד</span></button>
+        <button type="button" class="tile" data-val="earrings" aria-pressed="false"><span class="tile-ic" aria-hidden="true">✦</span><span class="tile-lbl">עגילים</span></button>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-head">
+        <div class="sdot da" aria-hidden="true">2</div>
+        <span class="ct">מתכת</span>
+      </div>
+      <div class="r2">
+        <div class="f">
+          <label class="lbl" for="metalType">סוג מתכת</label>
+          <select id="metalType" class="inp">
+            <option value="gold14">זהב 14K</option>
+            <option value="gold18">זהב 18K</option>
+            <option value="silver">כסף</option>
+            <option value="platinum">פלטינה</option>
+          </select>
+        </div>
+        <div class="f">
+          <label class="lbl" for="pricePg">מחיר לגרם (₪)</label>
+          <input id="pricePg" class="inp" type="number" min="0" step="0.01" placeholder="0.00" inputmode="decimal"/>
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-head">
+        <div class="sdot dt" aria-hidden="true">3</div>
+        <span class="ct">משקל מתכת</span>
+      </div>
+      <div class="wtabs" role="tablist" aria-label="אופן הזנת משקל">
+        <button type="button" class="wt on" id="tabM" role="tab" aria-selected="true">הזנה ידנית</button>
+        <button type="button" class="wt" id="tabC" role="tab" aria-selected="false">חישוב לפי מידות</button>
+      </div>
+      <div id="panM" role="tabpanel">
+        <div class="f">
+          <label class="lbl" for="wManual">משקל בגרמים</label>
+          <input id="wManual" class="inp" type="number" min="0" step="0.01" placeholder="0.00" inputmode="decimal"/>
+        </div>
+      </div>
+      <div id="panC" class="hidden" role="tabpanel" hidden>
+        <div id="ringNotice" class="ring-notice hidden">זמין לטבעות בלבד</div>
+        <div id="ringFields">
+          <div class="r3">
+            <div class="f"><label class="lbl" for="rSize">מידה (1–36)</label><input id="rSize" class="inp" type="number" min="1" max="36" step="1" placeholder="17" inputmode="numeric"/></div>
+            <div class="f"><label class="lbl" for="rWidth">רוחב (מ"מ)</label><input id="rWidth" class="inp" type="number" min="0" step="0.1" placeholder="4" inputmode="decimal"/></div>
+            <div class="f"><label class="lbl" for="rThick">עובי (מ"מ)</label><input id="rThick" class="inp" type="number" min="0" step="0.1" placeholder="1.5" inputmode="decimal"/></div>
+          </div>
+          <div id="calcPrev" class="calc-prev" aria-live="polite"></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-head">
+        <div class="sdot dpu" aria-hidden="true">4</div>
+        <span class="ct">אבנים</span>
+      </div>
+      <div class="stone-block">
+        <div class="stone-block-title"><span aria-hidden="true">💎</span> יהלומים</div>
+        <div class="r3">
+          <div class="f"><label class="lbl" for="diaCount">כמות</label><input id="diaCount" class="inp" type="number" min="0" step="1" value="0" inputmode="numeric"/></div>
+          <div class="f"><label class="lbl" for="diaCarat">קראט/יהלום</label><input id="diaCarat" class="inp" type="number" min="0" step="0.01" value="0" inputmode="decimal"/></div>
+          <div class="f"><label class="lbl" for="diaPrice">₪/קראט</label><input id="diaPrice" class="inp" type="number" min="0" step="1" value="0" inputmode="numeric"/></div>
+        </div>
+      </div>
+      <div class="hr-line"></div>
+      <div>
+        <div class="stone-block-title"><span aria-hidden="true">💠</span> אבני חן</div>
+        <div id="gemRows" class="gem-rows"></div>
+        <button class="btn-add-cost" id="btnAddGem" type="button">
+          <span class="plus" aria-hidden="true">+</span> הוסף סוג אבן
+        </button>
+      </div>
+      <div class="hr-line"></div>
+      <div class="f">
+        <label class="lbl" for="settingCost">עלות שיבוץ (₪)</label>
+        <input id="settingCost" class="inp" type="number" min="0" step="1" value="0" inputmode="numeric"/>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-head">
+        <div class="sdot db" aria-hidden="true">5</div>
+        <span class="ct">עלויות עבודה</span>
+      </div>
+      <div class="r2">
+        <div class="f"><label class="lbl" for="lPack">אריזה (₪)</label><input id="lPack" class="inp" type="number" min="0" step="1" value="0"/></div>
+        <div class="f"><label class="lbl" for="lCast">הדפסה (₪)</label><input id="lCast" class="inp" type="number" min="0" step="1" value="0"/></div>
+      </div>
+      <div class="r2 row-gap">
+        <div class="f"><label class="lbl" for="lModel">מודל 3D (₪)</label><input id="lModel" class="inp" type="number" min="0" step="1" value="0"/></div>
+        <div class="f"><label class="lbl" for="lPol">ליטוש (₪)</label><input id="lPol" class="inp" type="number" min="0" step="1" value="0"/></div>
+      </div>
+      <div class="r2 row-gap">
+        <div class="f"><label class="lbl" for="lRhod">ציפוי (₪)</label><input id="lRhod" class="inp" type="number" min="0" step="1" value="0"/></div>
+        <div class="f"></div>
+      </div>
+      <div class="dyn-costs" id="dynCosts"></div>
+      <button class="btn-add-cost" id="btnAddCost" type="button">
+        <span class="plus" aria-hidden="true">+</span> הוסף עלות
+      </button>
+      <div class="f row-gap-top">
+        <label class="lbl" for="complexity">מורכבות עבודה</label>
+        <select id="complexity" class="inp">
+          <option value="0">ללא תוספת</option>
+          <option value="50">פשוט — +₪50</option>
+          <option value="120">בינוני — +₪120</option>
+          <option value="250">מורכב — +₪250</option>
+          <option value="400">מאוד מורכב — +₪400</option>
+        </select>
+        <div class="complexity-chip" id="complexityChip" aria-live="polite"></div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-head">
+        <div class="sdot dc" aria-hidden="true">6</div>
+        <span class="ct">רווח</span>
+      </div>
+      <div class="f">
+        <label class="lbl" for="profit">אחוז רווח (%)</label>
+        <input id="profit" class="inp" type="number" min="0" max="500" step="1" value="30" inputmode="numeric"/>
+      </div>
+      <div class="profit-warn" id="profitWarn" role="status">
+        <span aria-hidden="true">⚠️</span><span id="profitWarnTxt">הרווח נמוך מדי — מומלץ לפחות 20%</span>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-head">
+        <div class="sdot dg" aria-hidden="true">7</div>
+        <span class="ct">הערות פנימיות</span>
+        <span class="card-hint">לא מופיעות ב-PDF ללקוח</span>
+      </div>
+      <textarea id="privateNotes" class="inp" placeholder="לקוח מעוניין בהנחה · לחזור שבוע הבא · מתנה ליום הולדת..."></textarea>
+    </div>
+    <div class="spacer-bottom"></div>
+  </div>
+
+  <div class="result-col">
+    <div class="res-panel">
+      <div class="res-head">
+        <div class="res-gem" aria-hidden="true">
+          <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
+            <path d="M7 1L11 5L7 13L3 5Z" fill="#D4537E" opacity=".85"/>
+            <path d="M3 5H11" stroke="#D4537E" stroke-width=".8"/>
+          </svg>
+        </div>
+        <span class="res-title">הצעת מחיר (פנימי)</span>
+        <span class="profit-badge hidden" id="profitBadge"></span>
+      </div>
+      <div class="res-body">
+        <input id="clientName" class="client-inp" type="text" placeholder="שם לקוח (אופציונלי)" maxlength="50" autocomplete="name"/>
+        <div class="f client-desc-wrap">
+          <label class="lbl" for="clientDesc">תיאור ללקוח (יופיע ב-PDF ללקוח)</label>
+          <textarea id="clientDesc" class="inp" placeholder="למשל: טבעת זהב 14K עם יהלומים, גימור מט..."></textarea>
+        </div>
+        <div id="resEmpty" class="res-empty">התחל להזין נתונים<br>והמחיר יחושב אוטומטית</div>
+        <div id="resContent" class="hidden">
+          <div id="resBD"></div>
+          <div class="divider"></div>
+          <div id="resTotals"></div>
+          <div class="total-box">
+            <div class="total-lbl" id="totalLbl">מחיר סופי</div>
+            <div class="total-val" id="totalVal">₪0</div>
+            <div class="total-sub" id="totalSub"></div>
+          </div>
+          <div class="action-btns">
+            <button type="button" class="btn-copy" id="btnCopy">העתק טקסט מהיר</button>
+            <button type="button" class="btn-save" id="btnSave">שמור ★</button>
+            <button type="button" class="btn-pdf btn-pdf-client" id="btnPdfClient">
+              <svg width="14" height="14" viewBox="0 0 14 14" fill="none" aria-hidden="true"><rect x="2" y="1" width="8" height="10" rx="1" stroke="#854F0B" stroke-width="1.2"/><path d="M5 1v2h5" stroke="#854F0B" stroke-width="1.2" stroke-linecap="round"/><path d="M4 6h4M4 8h3" stroke="#854F0B" stroke-width="1" stroke-linecap="round"/></svg>
+              PDF ללקוח
+            </button>
+            <button type="button" class="btn-pdf btn-pdf-internal" id="btnPdfInternal">
+              <svg width="14" height="14" viewBox="0 0 14 14" fill="none" aria-hidden="true"><rect x="2" y="1" width="8" height="10" rx="1" stroke="#72243E" stroke-width="1.2"/><path d="M4 5h6M4 7h6M4 9h4" stroke="#72243E" stroke-width="1" stroke-linecap="round"/></svg>
+              PDF פנימי (עם עלויות)
+            </button>
+          </div>
+          <p class="fb" id="fb"></p>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="hist-outer">
+  <div class="hist-panel">
+    <div class="hist-head">
+      <span class="hist-title">היסטוריית הצעות <span class="hist-badge" id="hBadge" hidden></span></span>
+      <button type="button" class="btn-clr-h" id="btnClrHist">מחק הכל</button>
+    </div>
+    <div id="histBody">
+      <div class="hist-empty">עדיין אין הצעות שמורות.<br>לחץ <strong>שמור ★</strong> אחרי חישוב.</div>
+    </div>
+  </div>
+</div>
+
+<div class="sticky-calc">
+  <div class="sticky-spacer"></div>
+  <button type="button" class="btn-clear" id="btnClr">נקה נתונים</button>
+</div>
+
+<div id="pdfOverlay" class="pdf-overlay" role="dialog" aria-modal="true" aria-labelledby="pdfTitle">
+  <div id="pdfDoc" class="pdf-doc">
+    <div class="pdf-header">
+      <div class="pdf-logo" aria-hidden="true">💍</div>
+      <div class="pdf-brand">הצעת מחיר</div>
+      <div class="pdf-doc-title" id="pdfTitle">תכשיט</div>
+    </div>
+    <div class="pdf-body">
+      <div class="pdf-meta">
+        <div>
+          <div class="pdf-client" id="pdfClient">לקוח</div>
+          <div class="pdf-subtitle" id="pdfType"></div>
+        </div>
+        <div class="pdf-meta-left">
+          <div id="pdfDate" class="pdf-date"></div>
+          <div id="pdfQuoteNum" class="pdf-quote-num"></div>
+        </div>
+      </div>
+      <p id="pdfClientDesc" class="pdf-client-desc hidden"></p>
+      <div class="pdf-section">
+        <div class="pdf-section-title" id="pdfSectionCostsTitle">פירוט</div>
+        <div id="pdfRows"></div>
+      </div>
+      <div class="pdf-section" id="pdfSectionPricing">
+        <div class="pdf-section-title">תמחור</div>
+        <div id="pdfTotals"></div>
+      </div>
+      <div class="pdf-total-box">
+        <div class="pdf-total-lbl" id="pdfTotalLbl">מחיר סופי</div>
+        <div class="pdf-total-amt" id="pdfTotalAmt">₪0</div>
+        <div class="pdf-total-note" id="pdfTotalNote"></div>
+      </div>
+    </div>
+    <div class="pdf-footer">מסמך זה הופק ממחשבון תכשיט מקצועי · <span id="pdfFooterDate"></span></div>
+    <div class="pdf-actions">
+      <button type="button" class="pdf-btn-print" id="btnPrint">הדפס / שמור PDF</button>
+      <button type="button" class="pdf-btn-close" id="btnPdfClose">סגור</button>
+    </div>
+  </div>
+</div>
+
+<script src="app.js" defer></script>
+</body>
+</html>
