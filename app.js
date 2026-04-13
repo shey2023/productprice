@@ -994,16 +994,7 @@ $("manifestLink").href = URL.createObjectURL(new Blob([JSON.stringify(manifest)]
 window.addEventListener("beforeinstallprompt", (e) => {
   e.preventDefault();
   deferredPrompt = e;
-  $("installBanner").classList.add("show");
 });
-$("btnInstall").addEventListener("click", async () => {
-  if (!deferredPrompt) return;
-  deferredPrompt.prompt();
-  await deferredPrompt.userChoice;
-  deferredPrompt = null;
-  $("installBanner").classList.remove("show");
-});
-$("btnDismiss").addEventListener("click", () => $("installBanner").classList.remove("show"));
 
 document.querySelectorAll("#jewTiles .tile").forEach((tile) => {
   tile.addEventListener("click", () => {
