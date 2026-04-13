@@ -506,7 +506,7 @@ select.inp { cursor: pointer; }
 }
 .total-lbl { font-size: 11px; font-weight: 600; color: var(--pink-dark); text-transform: uppercase; letter-spacing: .5px; margin-bottom: 4px; }
 .total-val { font-size: 28px; font-weight: 700; color: var(--pink-dark); }
-.total-sub { font-size: 11px; color: var(--text-muted); margin-top: 3px; }
+.total-sub { font-size: 11px; color: var(--text-muted); margin-top: 3px; text-align: start; }
 
 /* ── Action Buttons ── */
 .action-btns {
@@ -803,9 +803,11 @@ button:focus-visible, input:focus-visible, select:focus-visible, textarea:focus-
 /* ── Print ── */
 @media print {
   .app-brand, .form-col, .hist-outer, .sticky-calc, .install-banner,
-  .pdf-actions, .pdf-footer { display: none !important; }
+  .pdf-actions, .pdf-footer, .result-col { display: none !important; }
   .pdf-overlay { position: static; background: none; padding: 0; }
   .pdf-doc { box-shadow: none; max-width: 100%; }
+  /* When printing internal PDF, hide the internal banner for cleaner output */
+  .pdf-internal-banner { display: none !important; }
 }
 
 /* ══════════════════════════════════════════════════════════════ */
@@ -1113,6 +1115,7 @@ button:focus-visible, input:focus-visible, select:focus-visible, textarea:focus-
   opacity: .85;
 }
 .pdf-row-label { flex: 1; color: var(--text-sub); }
+.pdf-row-sep { color: var(--text-muted); flex-shrink: 0; padding: 0 2px; }
 .pdf-row-value { font-weight: 600; color: var(--text); white-space: nowrap; }
 
 
