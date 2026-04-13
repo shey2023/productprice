@@ -915,3 +915,21 @@ button:focus-visible, input:focus-visible, select:focus-visible, textarea:focus-
   flex-direction: column;
   gap: 4px;
 }
+
+.diamond-specs .spec-show {
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+}
+.diamond-specs .spec-show input[type="checkbox"] {
+  inline-size: 18px;
+  block-size: 18px;
+}
+
+#pdfDiamondSpecsRows .pdf-row {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 4px 0;
+  border-bottom: 1px dashed #e7d7de;
+}
