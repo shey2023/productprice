@@ -151,6 +151,93 @@
           <div class="dia-client-tip-title">איך להשתמש בזה מול הלקוח?</div>
           <p class="dia-client-tip-txt" id="diaClientLine">מלאו כמות, סה״כ קראט ומחיר לקראט — כאן יופיע ניסוח קצר להעתקה.</p>
         </div>
+
+        <!-- Diamond Specs Section -->
+        <div class="diamond-specs-section" id="diamondSpecsSection">
+          <div class="specs-title">💎 פרטי יהלומים (לצורך הצעת מחיר)</div>
+
+          <!-- Uniform Mode Specs -->
+          <div id="specsUniMode">
+            <div class="specs-field">
+              <label class="lbl" for="uniClarity">נקיון (Clarity)</label>
+              <select id="uniClarity" class="inp"></select>
+              <label class="spec-checkbox">
+                <input type="checkbox" id="uniClarityShow" data-mode="uni" data-spec="clarity"/>
+                הצג בהצעה ללקוח
+              </label>
+            </div>
+            <div class="specs-field">
+              <label class="lbl" for="uniColor">צבע (Color)</label>
+              <select id="uniColor" class="inp"></select>
+              <label class="spec-checkbox">
+                <input type="checkbox" id="uniColorShow" data-mode="uni" data-spec="color"/>
+                הצג בהצעה ללקוח
+              </label>
+            </div>
+            <div class="specs-field">
+              <label class="lbl" for="uniGia">מספר תעודת GIA</label>
+              <input type="text" id="uniGia" class="inp" placeholder="לדוגמה: GIA 1234567890" maxlength="60" autocomplete="off"/>
+              <label class="spec-checkbox">
+                <input type="checkbox" id="uniGiaShow" data-mode="uni" data-spec="gia"/>
+                הצג בהצעה ללקוח
+              </label>
+            </div>
+          </div>
+
+          <!-- Multi Mode Specs -->
+          <div id="specsMultiMode" class="hidden">
+            <div class="specs-group-title">קבוצה 1 (מרכזית)</div>
+            <div class="specs-field">
+              <label class="lbl" for="g1Clarity">נקיון (Clarity)</label>
+              <select id="g1Clarity" class="inp"></select>
+              <label class="spec-checkbox">
+                <input type="checkbox" id="g1ClarityShow" data-mode="g1" data-spec="clarity"/>
+                הצג בהצעה ללקוח
+              </label>
+            </div>
+            <div class="specs-field">
+              <label class="lbl" for="g1Color">צבע (Color)</label>
+              <select id="g1Color" class="inp"></select>
+              <label class="spec-checkbox">
+                <input type="checkbox" id="g1ColorShow" data-mode="g1" data-spec="color"/>
+                הצג בהצעה ללקוח
+              </label>
+            </div>
+            <div class="specs-field">
+              <label class="lbl" for="g1Gia">מספר תעודת GIA</label>
+              <input type="text" id="g1Gia" class="inp" placeholder="לדוגמה: GIA 1234567890" maxlength="60" autocomplete="off"/>
+              <label class="spec-checkbox">
+                <input type="checkbox" id="g1GiaShow" data-mode="g1" data-spec="gia"/>
+                הצג בהצעה ללקוח
+              </label>
+            </div>
+            <div class="specs-group-title specs-group-title-spaced">קבוצה 2 (צדדיות)</div>
+            <div class="specs-field">
+              <label class="lbl" for="g2Clarity">נקיון (Clarity)</label>
+              <select id="g2Clarity" class="inp"></select>
+              <label class="spec-checkbox">
+                <input type="checkbox" id="g2ClarityShow" data-mode="g2" data-spec="clarity"/>
+                הצג בהצעה ללקוח
+              </label>
+            </div>
+            <div class="specs-field">
+              <label class="lbl" for="g2Color">צבע (Color)</label>
+              <select id="g2Color" class="inp"></select>
+              <label class="spec-checkbox">
+                <input type="checkbox" id="g2ColorShow" data-mode="g2" data-spec="color"/>
+                הצג בהצעה ללקוח
+              </label>
+            </div>
+            <div class="specs-field">
+              <label class="lbl" for="g2Gia">מספר תעודת GIA</label>
+              <input type="text" id="g2Gia" class="inp" placeholder="לדוגמה: GIA 1234567890" maxlength="60" autocomplete="off"/>
+              <label class="spec-checkbox">
+                <input type="checkbox" id="g2GiaShow" data-mode="g2" data-spec="gia"/>
+                הצג בהצעה ללקוח
+              </label>
+            </div>
+          </div>
+        </div>
       </div>
       <div class="hr-line"></div>
       <div>

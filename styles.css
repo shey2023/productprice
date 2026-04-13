@@ -902,37 +902,67 @@ button:focus-visible, input:focus-visible, select:focus-visible, textarea:focus-
   box-shadow: var(--focus-ring);
 }
 
-/* ── Diamond Clarity & Color Fields ── */
-.dia-quality-fields {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 8px;
-  margin-top: 10px;
+/* ── Diamond Specs Section ── */
+.diamond-specs-section {
+  background: var(--pink-pale);
+  border: 1px solid #f0d8e4;
+  border-radius: var(--r);
+  padding: 14px 16px;
+  margin-top: 14px;
 }
 
-.dia-quality-field {
+.specs-title {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--pink-dark);
+  margin-bottom: 12px;
+}
+
+.specs-group-title {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--pink-dark);
+  margin-bottom: 8px;
+  padding-bottom: 4px;
+  border-bottom: 1px solid #f0d8e4;
+}
+
+.specs-group-title-spaced { margin-top: 14px; }
+
+.specs-field {
   display: flex;
   flex-direction: column;
   gap: 4px;
+  margin-bottom: 10px;
 }
 
-.diamond-specs .spec-show {
-  display: flex;
-  flex-direction: column;
-  justify-content: flex-end;
-}
-.diamond-specs .spec-show input[type="checkbox"] {
-  inline-size: 18px;
-  block-size: 18px;
+.specs-field .lbl {
+  font-size: 12px;
+  color: var(--text-sub);
 }
 
-#pdfDiamondSpecsRows .pdf-row {
+.spec-checkbox {
   display: flex;
-  justify-content: space-between;
-  gap: 12px;
-  padding: 4px 0;
-  border-bottom: 1px dashed #e7d7de;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  color: var(--text-sub);
+  cursor: pointer;
+  user-select: none;
 }
+
+.spec-checkbox input[type="checkbox"] {
+  width: 15px;
+  height: 15px;
+  cursor: pointer;
+  accent-color: var(--pink);
+  flex-shrink: 0;
+}
+
+@media (max-width: 600px) {
+  .diamond-specs-section { padding: 12px; }
+}
+
 
 
 
