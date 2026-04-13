@@ -933,3 +933,116 @@ button:focus-visible, input:focus-visible, select:focus-visible, textarea:focus-
   padding: 4px 0;
   border-bottom: 1px dashed #e7d7de;
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+/* ─── Diamond Spec Fields ─── */
+.diamond-specs {
+  padding: 8px 0 4px;
+}
+.diamond-specs .stone-lead {
+  color: #888;
+  font-size: .82rem;
+  margin: 0 0 10px;
+}
+.spec-row {
+  align-items: flex-end;
+}
+.spec-show {
+  flex: 0 0 auto;
+  min-width: 90px;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  padding-bottom: 6px;
+}
+.spec-chk-lbl {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: .78rem;
+  cursor: pointer;
+  white-space: nowrap;
+}
+.spec-chk-lbl input[type="checkbox"] {
+  inline-size: 17px;
+  block-size: 17px;
+  accent-color: #D4537E;
+  cursor: pointer;
+}
+
+/* ─── Diamond Specs in PDF ─── */
+#pdfDiamondSpecsSec {
+  margin-top: 14px;
+}
+#pdfDiamondSpecsSec .pdf-section-title {
+  font-weight: 600;
+  margin-bottom: 6px;
+}
+.pdf-spec-row {
+  display: flex;
+  justify-content: space-between;
+  padding: 3px 0;
+  border-bottom: 1px dashed #e7d7de;
+  font-size: .85rem;
+}
+.pdf-spec-label {
+  color: #666;
+}
+.pdf-spec-val {
+  color: #222;
+}
