@@ -75,5 +75,5 @@
 
 - ה-manifest נוצר דינמית ב-JS (`Blob` + `URL.createObjectURL`) כדי לא לדרוש קובץ נפרד.
 - הגדרות: `display: standalone`, `theme_color: #D4537E`, `lang: he`, `dir: rtl`.
-- נתמך `beforeinstallprompt` לכפתור "הוסף למסך הבית" (לא ממומש עדיין בממשק).
+- האירוע `beforeinstallprompt` נלכד ונשמר ב-`deferredPrompt`, אך אין כרגע כפתור "הוסף למסך הבית" בממשק — הבסיס קיים לשימוש עתידי.
 - **אין Service Worker** — האפליקציה אינה עובדת offline.
