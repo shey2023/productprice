@@ -1,6 +1,6 @@
 /**
  * מחשבון הצעת מחיר לתכשיט — לוגיקה פנימית.
- * PDF ללקוח: ללא פירוט עלויות — רק תיאור (אופציונלי) ומחיר סופי.
+ * PDF ללקוח: ללא פירוט עלויות — רק תיאור (אופציונלי) ומחיר ללקוח.
  */
 "use strict";
 
@@ -459,7 +459,7 @@ function renderRes(r) {
 
   const rounded = smartRound(r.final);
   const diff = rounded - r.final;
-  $("totalLbl").textContent = "מחיר סופי (מעוגל)";
+  $("totalLbl").textContent = "מחיר ללקוח";
   $("totalVal").innerHTML = "";
   $("totalVal").appendChild(document.createTextNode(fmt(rounded)));
   if (Math.abs(diff) > 0.5) {
@@ -567,7 +567,7 @@ function buildCopyText(r) {
   const lines = [];
   lines.push("הצעת מחיר — " + jewLabel());
   if (name) lines.push("לקוח: " + name);
-  lines.push("מחיר סופי: " + fmt(smartRound(r.final)));
+  lines.push("מחיר ללקוח: " + fmt(smartRound(r.final)));
   lines.push("--- פנימי ---");
   lines.push("עלות לפני רווח: " + fmt(r.sub));
   lines.push("רווח " + r.pct + "%: " + fmt(r.prof));
