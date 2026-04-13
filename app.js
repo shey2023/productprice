@@ -1192,7 +1192,7 @@ const manifest = {
     },
   ],
 };
-$("manifestLink").href = URL.createObjectURL(new Blob([JSON.stringify(manifest)], { type: "application/json" }));
+$("manifestLink").href = "manifest.json";
 
 window.addEventListener("beforeinstallprompt", (e) => {
   e.preventDefault();
