@@ -76,8 +76,8 @@
         <span class="ct">משקל מתכת</span>
       </div>
       <div class="wtabs" role="tablist" aria-label="אופן הזנת משקל">
-        <button type="button" class="wt on" id="tabM" role="tab" aria-selected="true">הזנה ידנית</button>
-        <button type="button" class="wt" id="tabC" role="tab" aria-selected="false">חישוב לפי מידות</button>
+        <button type="button" class="wt on" id="tabM" role="tab" aria-selected="true" title="הזן משקל ידנית בגרמים">משקל ידני</button>
+        <button type="button" class="wt" id="tabC" role="tab" aria-selected="false" title="חישוב אוטומטי לטבעות לפי מידה, רוחב ועובי">חישוב לפי מידה (טבעת)</button>
       </div>
       <div id="panM" role="tabpanel">
         <div class="f">
@@ -105,57 +105,57 @@
       </div>
       <div class="stone-block">
         <div class="stone-block-title"><span aria-hidden="true">💎</span> יהלומים</div>
-        <p class="stone-lead">פירוט האבנים (למילוי מהיר)</p>
+        <p class="stone-lead">פרטי יהלומים לחישוב עלות</p>
         <div class="wtabs dia-mode-tabs" id="diaModeTabs" role="tablist" aria-label="מצב פירוט יהלומים">
-          <button type="button" class="wt on" id="diaTabUni" role="tab" aria-selected="true">אפשרות א׳ · גודל אחיד</button>
-          <button type="button" class="wt" id="diaTabMulti" role="tab" aria-selected="false">אפשרות ב׳ · מספר גדלים</button>
+          <button type="button" class="wt on" id="diaTabUni" role="tab" aria-selected="true" title="כל היהלומים באותו גודל ומחיר">גודל אחיד</button>
+          <button type="button" class="wt" id="diaTabMulti" role="tab" aria-selected="false" title="אבן מרכזית ואבנות צדדיות בגדלים שונים">גדלים מעורבים</button>
         </div>
         <p class="dia-mode-hint" id="diaHintUni">למשל צמיד טניס או עגילי סוליטר</p>
         <p class="dia-mode-hint hidden" id="diaHintMulti">למשל אבן מרכזית + עיטור מסביב</p>
 
         <div id="diaPanelUni" class="dia-panel">
           <div class="r3">
-            <div class="f"><label class="lbl" for="diaCount">כמות אבנים</label><input id="diaCount" class="inp" type="number" min="0" step="1" value="0" inputmode="numeric"/></div>
-            <div class="f"><label class="lbl" for="diaTotalCt">סה״כ קראט</label><input id="diaTotalCt" class="inp" type="number" min="0" step="0.01" value="0" inputmode="decimal"/></div>
-            <div class="f"><label class="lbl" for="diaPrice">מחיר לקראט (₪)</label><input id="diaPrice" class="inp" type="number" min="0" step="1" value="0" inputmode="numeric"/></div>
+            <div class="f"><label class="lbl" for="diaCount" title="כמות יהלומים במוצר">כמות אבנים</label><input id="diaCount" class="inp" type="number" min="0" step="1" value="0" inputmode="numeric" placeholder="0"/></div>
+            <div class="f"><label class="lbl" for="diaTotalCt" title="סך המשקל הכולל של כל היהלומים בקראט">סה״כ קראט</label><input id="diaTotalCt" class="inp" type="number" min="0" step="0.01" value="0" inputmode="decimal" placeholder="0.00"/></div>
+            <div class="f"><label class="lbl" for="diaPrice" title="מחיר הרכישה לקראט (₪)">מחיר לקראט (₪)</label><input id="diaPrice" class="inp" type="number" min="0" step="1" value="0" inputmode="numeric" placeholder="0"/></div>
           </div>
           <div class="dia-stones-total">
-            <span class="dia-stones-total-lbl"><strong>סה״כ לאבנים</strong></span>
+            <span class="dia-stones-total-lbl"><strong>סה״כ יהלומים</strong></span>
             <span class="dia-stones-total-val" id="diaUniSubtotal">₪0</span>
           </div>
         </div>
 
         <div id="diaPanelMulti" class="dia-panel hidden">
           <div class="dia-group">
-            <div class="dia-group-title">קבוצה 1 (מרכזית)</div>
+            <div class="dia-group-title">קבוצה 1 — אבן מרכזית</div>
             <div class="r3 dia-group-row">
-              <div class="f"><label class="lbl" for="diaG1Count">כמות</label><input id="diaG1Count" class="inp" type="number" min="0" step="1" value="0" inputmode="numeric"/></div>
-              <div class="f"><label class="lbl" for="diaG1Ct">משקל (CT)</label><input id="diaG1Ct" class="inp" type="number" min="0" step="0.01" value="0" inputmode="decimal"/></div>
-              <div class="f"><label class="lbl" for="diaG1Price">מחיר לקראט (₪)</label><input id="diaG1Price" class="inp" type="number" min="0" step="1" value="0" inputmode="numeric"/></div>
+              <div class="f"><label class="lbl" for="diaG1Count">כמות</label><input id="diaG1Count" class="inp" type="number" min="0" step="1" value="0" inputmode="numeric" placeholder="0"/></div>
+              <div class="f"><label class="lbl" for="diaG1Ct">משקל קראט</label><input id="diaG1Ct" class="inp" type="number" min="0" step="0.01" value="0" inputmode="decimal" placeholder="0.00"/></div>
+              <div class="f"><label class="lbl" for="diaG1Price">מחיר לקראט (₪)</label><input id="diaG1Price" class="inp" type="number" min="0" step="1" value="0" inputmode="numeric" placeholder="0"/></div>
             </div>
           </div>
           <div class="dia-group dia-group-spaced">
-            <div class="dia-group-title">קבוצה 2 (צדדיות)</div>
+            <div class="dia-group-title">קבוצה 2 — אבנות צדדיות</div>
             <div class="r3 dia-group-row">
-              <div class="f"><label class="lbl" for="diaG2Count">כמות</label><input id="diaG2Count" class="inp" type="number" min="0" step="1" value="0" inputmode="numeric"/></div>
-              <div class="f"><label class="lbl" for="diaG2Ct">משקל (CT)</label><input id="diaG2Ct" class="inp" type="number" min="0" step="0.01" value="0" inputmode="decimal"/></div>
-              <div class="f"><label class="lbl" for="diaG2Price">מחיר לקראט (₪)</label><input id="diaG2Price" class="inp" type="number" min="0" step="1" value="0" inputmode="numeric"/></div>
+              <div class="f"><label class="lbl" for="diaG2Count">כמות</label><input id="diaG2Count" class="inp" type="number" min="0" step="1" value="0" inputmode="numeric" placeholder="0"/></div>
+              <div class="f"><label class="lbl" for="diaG2Ct">משקל קראט</label><input id="diaG2Ct" class="inp" type="number" min="0" step="0.01" value="0" inputmode="decimal" placeholder="0.00"/></div>
+              <div class="f"><label class="lbl" for="diaG2Price">מחיר לקראט (₪)</label><input id="diaG2Price" class="inp" type="number" min="0" step="1" value="0" inputmode="numeric" placeholder="0"/></div>
             </div>
           </div>
           <div class="dia-combined-row">
-            <span class="lbl dia-combined-lbl">סה״כ משקל (Combined CT)</span>
+            <span class="lbl dia-combined-lbl">סה״כ משקל כולל (קראט)</span>
             <span class="dia-combined-val" id="diaCombinedCtDisp">0</span>
           </div>
         </div>
 
         <div class="dia-client-tip" id="diaClientTip">
-          <div class="dia-client-tip-title">איך להשתמש בזה מול הלקוח?</div>
+          <div class="dia-client-tip-title">ניסוח ללקוח</div>
           <p class="dia-client-tip-txt" id="diaClientLine">מלאו כמות, סה״כ קראט ומחיר לקראט — כאן יופיע ניסוח קצר להעתקה.</p>
         </div>
 
         <!-- Diamond Specs Section -->
         <div class="diamond-specs-section" id="diamondSpecsSection">
-          <div class="specs-title">💎 פרטי יהלומים (לצורך הצעת מחיר)</div>
+          <div class="specs-title">💎 פרטי יהלומים</div>
 
           <!-- Uniform Mode Specs -->
           <div id="specsUniMode">
@@ -176,8 +176,8 @@
               </label>
             </div>
             <div class="specs-field">
-              <label class="lbl" for="uniGia">מספר תעודת GIA</label>
-              <input type="text" id="uniGia" class="inp" placeholder="לדוגמה: GIA 1234567890" maxlength="60" autocomplete="off"/>
+              <label class="lbl" for="uniGia">מקור תעודה</label>
+              <input type="text" id="uniGia" class="inp" placeholder="לדוגמה: GIA / IGI / IGL" maxlength="60" autocomplete="off"/>
               <label class="spec-checkbox">
                 <input type="checkbox" id="uniGiaShow" data-mode="uni" data-spec="gia"/>
                 הצג בהצעה ללקוח
@@ -205,8 +205,8 @@
               </label>
             </div>
             <div class="specs-field">
-              <label class="lbl" for="g1Gia">מספר תעודת GIA</label>
-              <input type="text" id="g1Gia" class="inp" placeholder="לדוגמה: GIA 1234567890" maxlength="60" autocomplete="off"/>
+              <label class="lbl" for="g1Gia">מקור תעודה</label>
+              <input type="text" id="g1Gia" class="inp" placeholder="לדוגמה: GIA / IGI / IGL" maxlength="60" autocomplete="off"/>
               <label class="spec-checkbox">
                 <input type="checkbox" id="g1GiaShow" data-mode="g1" data-spec="gia"/>
                 הצג בהצעה ללקוח
@@ -230,8 +230,8 @@
               </label>
             </div>
             <div class="specs-field">
-              <label class="lbl" for="g2Gia">מספר תעודת GIA</label>
-              <input type="text" id="g2Gia" class="inp" placeholder="לדוגמה: GIA 1234567890" maxlength="60" autocomplete="off"/>
+              <label class="lbl" for="g2Gia">מקור תעודה</label>
+              <input type="text" id="g2Gia" class="inp" placeholder="לדוגמה: GIA / IGI / IGL" maxlength="60" autocomplete="off"/>
               <label class="spec-checkbox">
                 <input type="checkbox" id="g2GiaShow" data-mode="g2" data-spec="gia"/>
                 הצג בהצעה ללקוח
@@ -245,13 +245,13 @@
         <div class="stone-block-title"><span aria-hidden="true">💠</span> אבני חן</div>
         <div id="gemRows" class="gem-rows"></div>
         <button class="btn-add-cost" id="btnAddGem" type="button">
-          <span class="plus" aria-hidden="true">+</span> הוסף סוג אבן
+          <span class="plus" aria-hidden="true">+</span> הוסף אבן חן
         </button>
       </div>
       <div class="hr-line"></div>
       <div class="f">
-        <label class="lbl" for="settingCost">עלות שיבוץ (₪)</label>
-        <input id="settingCost" class="inp" type="number" min="0" step="1" value="0" inputmode="numeric"/>
+        <label class="lbl" for="settingCost" title="עלות עבודת שיבוץ האבנות">עלות שיבוץ (₪)</label>
+        <input id="settingCost" class="inp" type="number" min="0" step="1" value="0" inputmode="numeric" placeholder="0"/>
       </div>
     </div>
 
@@ -261,15 +261,15 @@
         <span class="ct">עלויות עבודה</span>
       </div>
       <div class="r2">
-        <div class="f"><label class="lbl" for="lPack">אריזה (₪)</label><input id="lPack" class="inp" type="number" min="0" step="1" value="0"/></div>
-        <div class="f"><label class="lbl" for="lCast">הדפסה (₪)</label><input id="lCast" class="inp" type="number" min="0" step="1" value="0"/></div>
+        <div class="f"><label class="lbl" for="lPack" title="עלות קופסה ואריזה">אריזה (₪)</label><input id="lPack" class="inp" type="number" min="0" step="1" value="0" placeholder="0"/></div>
+        <div class="f"><label class="lbl" for="lCast" title="עלות יציקה / הדפסת שעווה">יציקה / הדפסה (₪)</label><input id="lCast" class="inp" type="number" min="0" step="1" value="0" placeholder="0"/></div>
       </div>
       <div class="r2 row-gap">
-        <div class="f"><label class="lbl" for="lModel">מודל 3D (₪)</label><input id="lModel" class="inp" type="number" min="0" step="1" value="0"/></div>
-        <div class="f"><label class="lbl" for="lPol">ליטוש (₪)</label><input id="lPol" class="inp" type="number" min="0" step="1" value="0"/></div>
+        <div class="f"><label class="lbl" for="lModel" title="עלות מודל CAD / 3D">מודל 3D (₪)</label><input id="lModel" class="inp" type="number" min="0" step="1" value="0" placeholder="0"/></div>
+        <div class="f"><label class="lbl" for="lPol" title="עלות ליטוש וגימור">ליטוש (₪)</label><input id="lPol" class="inp" type="number" min="0" step="1" value="0" placeholder="0"/></div>
       </div>
       <div class="r2 row-gap">
-        <div class="f"><label class="lbl" for="lRhod">ציפוי (₪)</label><input id="lRhod" class="inp" type="number" min="0" step="1" value="0"/></div>
+        <div class="f"><label class="lbl" for="lRhod" title="עלות ציפוי רודיום / זהב / אחר">ציפוי (₪)</label><input id="lRhod" class="inp" type="number" min="0" step="1" value="0" placeholder="0"/></div>
         <div class="f"></div>
       </div>
       <div class="dyn-costs" id="dynCosts"></div>
@@ -323,13 +323,13 @@
             <path d="M3 5H11" stroke="#D4537E" stroke-width=".8"/>
           </svg>
         </div>
-        <span class="res-title">הצעת מחיר (פנימי)</span>
+        <span class="res-title">עלויות ומחיר</span>
         <span class="profit-badge hidden" id="profitBadge"></span>
       </div>
       <div class="res-body">
         <input id="clientName" class="client-inp" type="text" placeholder="שם לקוח (אופציונלי)" maxlength="50" autocomplete="name"/>
         <div class="f client-desc-wrap">
-          <label class="lbl" for="clientDesc">תיאור ללקוח (יופיע ב-PDF ללקוח)</label>
+          <label class="lbl" for="clientDesc">תיאור ללקוח (יופיע ב‑PDF ללקוח)</label>
           <textarea id="clientDesc" class="inp" placeholder="למשל: טבעת זהב 14K עם יהלומים, גימור מט..."></textarea>
         </div>
         <div id="resEmpty" class="res-empty">התחל להזין נתונים<br>והמחיר יחושב אוטומטית</div>
@@ -351,7 +351,7 @@
             </button>
             <button type="button" class="btn-pdf btn-pdf-internal" id="btnPdfInternal">
               <svg width="14" height="14" viewBox="0 0 14 14" fill="none" aria-hidden="true"><rect x="2" y="1" width="8" height="10" rx="1" stroke="#72243E" stroke-width="1.2"/><path d="M4 5h6M4 7h6M4 9h4" stroke="#72243E" stroke-width="1" stroke-linecap="round"/></svg>
-              PDF פנימי (עם עלויות)
+              PDF פנימי
             </button>
           </div>
           <p class="fb" id="fb"></p>
@@ -368,7 +368,7 @@
       <button type="button" class="btn-clr-h" id="btnClrHist">מחק הכל</button>
     </div>
     <div id="histBody">
-      <div class="hist-empty">עדיין אין הצעות שמורות.<br>לחץ <strong>שמור ★</strong> אחרי חישוב.</div>
+      <div class="hist-empty">עדיין אין הצעות שמורות.<br>לחץ <strong>שמור ★</strong> לאחר חישוב.</div>
     </div>
   </div>
 </div>
@@ -380,10 +380,11 @@
 
 <div id="pdfOverlay" class="pdf-overlay" role="dialog" aria-modal="true" aria-labelledby="pdfTitle">
   <div id="pdfDoc" class="pdf-doc">
+    <div class="pdf-internal-banner hidden" id="pdfInternalBanner" aria-label="מסמך פנימי בלבד">🔒 פנימי בלבד — לא למסירה ללקוח</div>
     <div class="pdf-header">
       <img class="pdf-logo-img" src="images/Red-Symbol.svg" alt="" width="56" height="56" decoding="async"/>
       <div class="pdf-brand-sub" lang="en">Shey</div>
-      <div class="pdf-brand">הצעת מחיר</div>
+      <div class="pdf-brand" id="pdfBrandTitle">הצעת מחיר</div>
       <div class="pdf-doc-title" id="pdfTitle">תכשיט</div>
     </div>
     <div class="pdf-body">
@@ -414,7 +415,7 @@
     </div>
     <div class="pdf-footer">Shey · מחשבון הצעת מחיר · <span id="pdfFooterDate"></span></div>
     <div class="pdf-actions">
-      <button type="button" class="pdf-btn-print" id="btnPrint">הדפס / שמור PDF</button>
+      <button type="button" class="pdf-btn-print" id="btnPrint">הדפס / שמור כ‑PDF</button>
       <button type="button" class="pdf-btn-close" id="btnPdfClose">סגור</button>
     </div>
   </div>
