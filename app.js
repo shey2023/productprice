@@ -1048,7 +1048,7 @@ function updateCalcPreview() {
   const claritySelects = ["uniClarity", "g1Clarity", "g2Clarity"];
   const colorSelects   = ["uniColor",   "g1Color",   "g2Color"];
   claritySelects.forEach((id) => {
-    const sel = $( id);
+    const sel = $(id);
     const blank = document.createElement("option");
     blank.value = ""; blank.textContent = "-- לא נבחר --";
     sel.appendChild(blank);
