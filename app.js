@@ -6,10 +6,18 @@
 
 /** @typedef {{ id: string, label: string, count: number, carat: number, price: number }} GemStone */
 /** @typedef {{ id: string, label: string, amount: number }} DynCost */
+/**
+ * @typedef {{ clarity: string, color: string, gia: string,
+ *   showInClient: { clarity: boolean, color: boolean, gia: boolean }
+ * }} DiamondSpecs
+ */
 
 const DENS = { gold14: 13.1, gold18: 15.6, silver: 10.49, platinum: 21.45 };
 const MLBL = { gold14: "זהב 14K", gold18: "זהב 18K", silver: "כסף", platinum: "פלטינה" };
 const JLBL = { ring: "טבעת", pendant: "תליון", bracelet: "צמיד", earrings: "עגילים", other: "אחר" };
+
+const CLARITY_OPTIONS = ["FL", "IF", "VVS1", "VVS2", "VS1", "VS2", "SI1", "SI2", "I1", "I2", "I3"];
+const COLOR_OPTIONS = ["D", "E", "F", "G", "H", "I", "J", "K-Z"];
 const RDIAM = {
   1: 12.8, 2: 13.2, 3: 13.5, 4: 13.9, 5: 14.3, 6: 14.7, 7: 15.1, 8: 15.4, 9: 15.8, 10: 16.2,
   11: 16.6, 12: 16.9, 13: 17.3, 14: 17.7, 15: 18.1, 16: 18.5, 17: 18.8, 18: 19.2, 19: 19.6, 20: 20,
@@ -47,6 +55,13 @@ let deferredPrompt = null;
 let pdfMode = "client";
 /** @type {'uni'|'multi'} */
 let diaMode = "uni";
+
+/** @type {{ uni: DiamondSpecs, g1: DiamondSpecs, g2: DiamondSpecs }} */
+let diamondSpecs = {
+  uni: { clarity: "", color: "", gia: "", showInClient: { clarity: false, color: false, gia: false } },
+  g1:  { clarity: "", color: "", gia: "", showInClient: { clarity: false, color: false, gia: false } },
+  g2:  { clarity: "", color: "", gia: "", showInClient: { clarity: false, color: false, gia: false } },
+};
 
 const $ = (id) => {
   const el = document.getElementById(id);
@@ -169,6 +184,11 @@ function calc() {
     final,
     mt,
     ppg,
+    diamondSpecs: {
+      uni: { ...diamondSpecs.uni, showInClient: { ...diamondSpecs.uni.showInClient } },
+      g1:  { ...diamondSpecs.g1,  showInClient: { ...diamondSpecs.g1.showInClient  } },
+      g2:  { ...diamondSpecs.g2,  showInClient: { ...diamondSpecs.g2.showInClient  } },
+    },
   };
 }
 
@@ -183,6 +203,13 @@ function setDiaMode(mode) {
   $("diaPanelMulti").classList.toggle("hidden", uni);
   $("diaHintUni").classList.toggle("hidden", !uni);
   $("diaHintMulti").classList.toggle("hidden", uni);
+  updateDiamondSpecsUI();
+}
+
+function updateDiamondSpecsUI() {
+  const uni = diaMode === "uni";
+  $("specsUniMode").classList.toggle("hidden", !uni);
+  $("specsMultiMode").classList.toggle("hidden", uni);
 }
 
 function updateDiaFormFeedback(r) {
@@ -412,6 +439,19 @@ function renderRes(r) {
     bd.appendChild(mkRow("תוספת מורכבות", fmt(r.complexity), false, "cost"));
   }
 
+  // Diamond specs display
+  const specsModes = r.diaMode === "uni" ? ["uni"] : ["g1", "g2"];
+  const specLabels = { uni: "יהלומים", g1: "קבוצה 1 (מרכזית)", g2: "קבוצה 2 (צדדיות)" };
+  specsModes.forEach((m) => {
+    const sp = r.diamondSpecs[m];
+    if (sp.clarity || sp.color || sp.gia) {
+      bd.appendChild(mkRow("פרטי יהלומים" + (r.diaMode === "multi" ? " — " + specLabels[m] : ""), "", false, "specs-header"));
+      if (sp.clarity) bd.appendChild(mkRow("נקיון (Clarity)", sp.clarity, true, "cost"));
+      if (sp.color)   bd.appendChild(mkRow("צבע (Color)", sp.color, true, "cost"));
+      if (sp.gia)     bd.appendChild(mkRow("תעודת GIA", sp.gia, true, "cost"));
+    }
+  });
+
   const totals = $("resTotals");
   totals.replaceChildren();
   totals.appendChild(mkRow("עלות כוללת (לפני רווח)", fmt(r.sub), false, "normal"));
@@ -574,15 +614,24 @@ function openPdf(mode) {
     secCosts.textContent = "פרטי ההצעה";
     descEl.classList.toggle("hidden", !clientDesc);
     descEl.textContent = clientDesc;
-    const row = document.createElement("div");
-    row.className = "pdf-row";
-    row.innerHTML =
-      "<span class=\"pdf-row-label\">סוג תכשיט</span><span class=\"pdf-row-value\">" + escapeHtml(jewLabel()) + "</span>";
-    pdfRows.appendChild(row);
-    const row2 = document.createElement("div");
-    row2.className = "pdf-row";
-    row2.innerHTML = "<span class=\"pdf-row-label\">מתכת</span><span class=\"pdf-row-value\">" + MLBL[r.mt] + "</span>";
-    pdfRows.appendChild(row2);
+    const addClientRow = (lab, val) => {
+      const row = document.createElement("div");
+      row.className = "pdf-row";
+      row.innerHTML =
+        "<span class=\"pdf-row-label\">" + escapeHtml(String(lab)) + "</span><span class=\"pdf-row-value\">" + escapeHtml(String(val)) + "</span>";
+      pdfRows.appendChild(row);
+    };
+    addClientRow("סוג תכשיט", jewLabel());
+    addClientRow("מתכת", MLBL[r.mt]);
+    // Diamond specs — only show checked items
+    const clientSpecsModes = r.diaMode === "uni" ? ["uni"] : ["g1", "g2"];
+    const clientSpecsLabels = { uni: "", g1: " — קבוצה 1", g2: " — קבוצה 2" };
+    clientSpecsModes.forEach((m) => {
+      const sp = r.diamondSpecs[m];
+      if (sp.clarity && sp.showInClient.clarity) addClientRow("נקיון (Clarity)" + clientSpecsLabels[m], sp.clarity);
+      if (sp.color   && sp.showInClient.color)   addClientRow("צבע (Color)" + clientSpecsLabels[m], sp.color);
+      if (sp.gia     && sp.showInClient.gia)      addClientRow("תעודת GIA" + clientSpecsLabels[m], sp.gia);
+    });
     secPricing.style.display = "none";
     pdfTotals.replaceChildren();
     $("pdfTotalLbl").textContent = "מחיר ללקוח";
@@ -610,6 +659,16 @@ function openPdf(mode) {
     };
 
     renderInternalPdfCostBreakdown(r, addPdfRow);
+
+    // Diamond specs — internal PDF: always show all, mark unchecked as internal only
+    const intSpecsModes = r.diaMode === "uni" ? ["uni"] : ["g1", "g2"];
+    const intSpecsLabels = { uni: "", g1: " — קבוצה 1", g2: " — קבוצה 2" };
+    intSpecsModes.forEach((m) => {
+      const sp = r.diamondSpecs[m];
+      if (sp.clarity) addPdfRow("נקיון (Clarity)" + intSpecsLabels[m], sp.clarity + (sp.showInClient.clarity ? "" : " (פנימי בלבד)"), true);
+      if (sp.color)   addPdfRow("צבע (Color)" + intSpecsLabels[m],   sp.color   + (sp.showInClient.color   ? "" : " (פנימי בלבד)"), true);
+      if (sp.gia)     addPdfRow("תעודת GIA" + intSpecsLabels[m],     sp.gia     + (sp.showInClient.gia     ? "" : " (פנימי בלבד)"), true);
+    });
 
     const pnotes = ($("privateNotes").value || "").trim();
     if (pnotes) addPdfRow("הערות פנימיות", pnotes, false);
@@ -783,6 +842,18 @@ function loadQuote(id) {
   $("jewTypeOther").value = p.jewOther ?? "";
   dynCosts = Array.isArray(p.dynCosts) ? p.dynCosts.map((c) => ({ ...c, id: c.id || uid() })) : [];
   gemStones = Array.isArray(p.gemStones) ? p.gemStones.map((g) => ({ ...g, id: g.id || uid() })) : [];
+  // Restore diamondSpecs (with backward-compat for old quotes)
+  const defSpecs = () => ({ clarity: "", color: "", gia: "", showInClient: { clarity: false, color: false, gia: false } });
+  if (p.diamondSpecs && typeof p.diamondSpecs === "object") {
+    diamondSpecs = {
+      uni: { ...defSpecs(), ...p.diamondSpecs.uni, showInClient: { ...defSpecs().showInClient, ...(p.diamondSpecs.uni || {}).showInClient } },
+      g1:  { ...defSpecs(), ...p.diamondSpecs.g1,  showInClient: { ...defSpecs().showInClient, ...(p.diamondSpecs.g1  || {}).showInClient } },
+      g2:  { ...defSpecs(), ...p.diamondSpecs.g2,  showInClient: { ...defSpecs().showInClient, ...(p.diamondSpecs.g2  || {}).showInClient } },
+    };
+  } else {
+    diamondSpecs = { uni: defSpecs(), g1: defSpecs(), g2: defSpecs() };
+  }
+  loadDiamondSpecsToUI();
   renderDynCosts();
   renderGemRows();
   updateRingUi();
@@ -835,6 +906,7 @@ function saveQuote() {
     jewOther: $("jewTypeOther").value,
     dynCosts,
     gemStones,
+    diamondSpecs,
   };
   const entry = {
     id: uid(),
@@ -970,6 +1042,88 @@ function updateCalcPreview() {
 }
 
 /* ── אתחול ── */
+
+// Populate diamond specs dropdowns
+(function initSpecsDropdowns() {
+  const claritySelects = ["uniClarity", "g1Clarity", "g2Clarity"];
+  const colorSelects   = ["uniColor",   "g1Color",   "g2Color"];
+  claritySelects.forEach((id) => {
+    const sel = $( id);
+    const blank = document.createElement("option");
+    blank.value = ""; blank.textContent = "-- לא נבחר --";
+    sel.appendChild(blank);
+    CLARITY_OPTIONS.forEach((v) => {
+      const o = document.createElement("option");
+      o.value = v; o.textContent = v;
+      sel.appendChild(o);
+    });
+  });
+  colorSelects.forEach((id) => {
+    const sel = $(id);
+    const blank = document.createElement("option");
+    blank.value = ""; blank.textContent = "-- לא נבחר --";
+    sel.appendChild(blank);
+    COLOR_OPTIONS.forEach((v) => {
+      const o = document.createElement("option");
+      o.value = v; o.textContent = v;
+      sel.appendChild(o);
+    });
+  });
+})();
+
+function loadDiamondSpecsToUI() {
+  const modeMap = [
+    ["uni", "uniClarity", "uniColor", "uniGia", "uniClarityShow", "uniColorShow", "uniGiaShow"],
+    ["g1",  "g1Clarity",  "g1Color",  "g1Gia",  "g1ClarityShow",  "g1ColorShow",  "g1GiaShow"],
+    ["g2",  "g2Clarity",  "g2Color",  "g2Gia",  "g2ClarityShow",  "g2ColorShow",  "g2GiaShow"],
+  ];
+  modeMap.forEach(([m, cId, colId, gId, csId, colsId, gsId]) => {
+    const sp = diamondSpecs[m];
+    $(cId).value   = sp.clarity || "";
+    $(colId).value = sp.color   || "";
+    $(gId).value   = sp.gia     || "";
+    $(csId).checked   = !!sp.showInClient.clarity;
+    $(colsId).checked = !!sp.showInClient.color;
+    $(gsId).checked   = !!sp.showInClient.gia;
+  });
+  updateDiamondSpecsUI();
+}
+
+// Diamond specs event listeners
+[
+  ["uniClarity", "uni", "clarity", false],
+  ["uniColor",   "uni", "color",   false],
+  ["uniGia",     "uni", "gia",     false],
+  ["g1Clarity",  "g1",  "clarity", false],
+  ["g1Color",    "g1",  "color",   false],
+  ["g1Gia",      "g1",  "gia",     false],
+  ["g2Clarity",  "g2",  "clarity", false],
+  ["g2Color",    "g2",  "color",   false],
+  ["g2Gia",      "g2",  "gia",     false],
+].forEach(([id, mode, spec]) => {
+  $(id).addEventListener("input", (e) => {
+    diamondSpecs[mode][spec] = /** @type {HTMLInputElement} */ (e.target).value;
+    scheduleCalc();
+  });
+});
+
+[
+  ["uniClarityShow", "uni", "clarity"],
+  ["uniColorShow",   "uni", "color"],
+  ["uniGiaShow",     "uni", "gia"],
+  ["g1ClarityShow",  "g1",  "clarity"],
+  ["g1ColorShow",    "g1",  "color"],
+  ["g1GiaShow",      "g1",  "gia"],
+  ["g2ClarityShow",  "g2",  "clarity"],
+  ["g2ColorShow",    "g2",  "color"],
+  ["g2GiaShow",      "g2",  "gia"],
+].forEach(([id, mode, spec]) => {
+  $(id).addEventListener("change", (e) => {
+    diamondSpecs[mode].showInClient[spec] = /** @type {HTMLInputElement} */ (e.target).checked;
+    scheduleCalc();
+  });
+});
+
 const manifest = {
   name: "Shey · מחשבון הצעת מחיר",
   short_name: "Shey",
@@ -1124,6 +1278,12 @@ $("btnClr").addEventListener("click", () => {
   $("jewTypeOther").value = "";
   dynCosts = [];
   gemStones = [];
+  diamondSpecs = {
+    uni: { clarity: "", color: "", gia: "", showInClient: { clarity: false, color: false, gia: false } },
+    g1:  { clarity: "", color: "", gia: "", showInClient: { clarity: false, color: false, gia: false } },
+    g2:  { clarity: "", color: "", gia: "", showInClient: { clarity: false, color: false, gia: false } },
+  };
+  loadDiamondSpecsToUI();
   renderDynCosts();
   renderGemRows();
   lastRes = null;
