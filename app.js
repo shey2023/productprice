@@ -1,6 +1,17 @@
 /**
  * מחשבון הצעת מחיר לתכשיט — לוגיקה פנימית.
  * PDF ללקוח: ללא פירוט עלויות — רק תיאור (אופציונלי) ומחיר סופי.
+ * PDF פנימי: פירוט מלא של עלויות, רווח ומחיר מעוגל.
+ *
+ * Sections:
+ *  1. Constants & types
+ *  2. State variables
+ *  3. Helpers (formatting, DOM, utilities)
+ *  4. Calculation
+ *  5. Rendering (result panel, feedback)
+ *  6. PDF generation
+ *  7. Persistence (save / load / history)
+ *  8. Event listeners & init
  */
 "use strict";
 
@@ -11,6 +22,10 @@
  *   showInClient: { clarity: boolean, color: boolean, gia: boolean }
  * }} DiamondSpecs
  */
+
+// ─────────────────────────────────────────────────────────────
+// 1. Constants & types
+// ─────────────────────────────────────────────────────────────
 
 const DENS = { gold14: 13.1, gold18: 15.6, silver: 10.49, platinum: 21.45 };
 const MLBL = { gold14: "זהב 14K", gold18: "זהב 18K", silver: "כסף", platinum: "פלטינה" };
@@ -25,6 +40,10 @@ const RDIAM = {
   31: 24.1, 32: 24.5, 33: 24.9, 34: 25.2, 35: 25.6, 36: 26,
 };
 const HK = "jc_hist_v2";
+
+// ─────────────────────────────────────────────────────────────
+// 2. State variables
+// ─────────────────────────────────────────────────────────────
 
 /** @type {'ring'|'pendant'|'bracelet'|'earrings'|'other'} */
 let jewType = "ring";
@@ -63,6 +82,10 @@ let diamondSpecs = {
   g2:  { clarity: "", color: "", gia: "", showInClient: { clarity: false, color: false, gia: false } },
 };
 
+// ─────────────────────────────────────────────────────────────
+// 3. Helpers — formatting, DOM, utilities
+// ─────────────────────────────────────────────────────────────
+
 const $ = (id) => {
   const el = document.getElementById(id);
   if (!el) throw new Error("Missing #" + id);
@@ -85,6 +108,10 @@ function smartRound(n) {
   if (n < 5000) return Math.ceil(n / 100) * 100;
   return Math.ceil(n / 500) * 500;
 }
+
+// ─────────────────────────────────────────────────────────────
+// 4. Calculation
+// ─────────────────────────────────────────────────────────────
 
 function calc() {
   const mt = $("metalType").value;
@@ -191,6 +218,10 @@ function calc() {
     },
   };
 }
+
+// ─────────────────────────────────────────────────────────────
+// 5. Rendering — result panel, form feedback, UI helpers
+// ─────────────────────────────────────────────────────────────
 
 function setDiaMode(mode) {
   diaMode = mode;
@@ -375,7 +406,7 @@ function renderRes(r) {
       if (l1 > 0) {
         bd.appendChild(
           mkRow(
-            "קבוצה 1 (מרכזית) · " +
+            "קבוצה 1 (אבן מרכזית) · " +
               r.diaG1Count +
               " · " +
               fmtN(r.diaG1Ct, 3) +
@@ -391,7 +422,7 @@ function renderRes(r) {
       if (l2 > 0) {
         bd.appendChild(
           mkRow(
-            "קבוצה 2 (צדדיות) · " +
+            "קבוצה 2 (אבנות צדדיות) · " +
               r.diaG2Count +
               " · " +
               fmtN(r.diaG2Ct, 3) +
@@ -405,7 +436,7 @@ function renderRes(r) {
         );
       }
       if (r.diaCombinedCt > 0) {
-        bd.appendChild(mkRow("סה״כ משקל (Combined CT)", fmtN(r.diaCombinedCt, 3) + " קראט", true, "cost"));
+        bd.appendChild(mkRow("סה״כ משקל כולל (קראט)", fmtN(r.diaCombinedCt, 3) + " קראט", true, "cost"));
       }
     }
   }
@@ -424,7 +455,7 @@ function renderRes(r) {
 
   const labLines = [
     ["אריזה", r.lPack],
-    ["הדפסה", r.lc],
+    ["יציקה / הדפסה", r.lc],
     ["מודל 3D", r.lModel],
     ["ליטוש", r.lp],
     ["ציפוי", r.lr],
@@ -439,16 +470,16 @@ function renderRes(r) {
     bd.appendChild(mkRow("תוספת מורכבות", fmt(r.complexity), false, "cost"));
   }
 
-  // Diamond specs display
+  // Diamond specs display in result panel
   const specsModes = r.diaMode === "uni" ? ["uni"] : ["g1", "g2"];
-  const specLabels = { uni: "יהלומים", g1: "קבוצה 1 (מרכזית)", g2: "קבוצה 2 (צדדיות)" };
+  const specLabels = { uni: "יהלומים", g1: "קבוצה 1 (אבן מרכזית)", g2: "קבוצה 2 (אבנות צדדיות)" };
   specsModes.forEach((m) => {
     const sp = r.diamondSpecs[m];
     if (sp.clarity || sp.color || sp.gia) {
       bd.appendChild(mkRow("פרטי יהלומים" + (r.diaMode === "multi" ? " — " + specLabels[m] : ""), "", false, "specs-header"));
       if (sp.clarity) bd.appendChild(mkRow("נקיון (Clarity)", sp.clarity, true, "cost"));
       if (sp.color)   bd.appendChild(mkRow("צבע (Color)", sp.color, true, "cost"));
-      if (sp.gia)     bd.appendChild(mkRow("תעודת GIA", sp.gia, true, "cost"));
+      if (sp.gia)     bd.appendChild(mkRow("מקור תעודה", sp.gia, true, "cost"));
     }
   });
 
@@ -459,23 +490,23 @@ function renderRes(r) {
 
   const rounded = smartRound(r.final);
   const diff = rounded - r.final;
-  $("totalLbl").textContent = "מחיר סופי (מעוגל)";
-  $("totalVal").innerHTML = "";
-  $("totalVal").appendChild(document.createTextNode(fmt(rounded)));
+  $("totalLbl").textContent = "מחיר סופי";
+  $("totalVal").textContent = fmt(rounded);
   if (Math.abs(diff) > 0.5) {
-    const b = document.createElement("span");
-    b.className = "rounded-badge";
-    b.textContent = "לפני עיגול: " + fmt(r.final);
-    $("totalVal").appendChild(b);
+    $("totalSub").textContent = "לפני עיגול: " + fmt(r.final);
+  } else {
+    $("totalSub").textContent = "";
   }
-  $("totalSub").textContent =
-    diff > 0.5 ? "עיגול מעלה את המחיר ב־" + fmt(diff) + " לנוחות תמחור" : "";
 }
 
+// ─────────────────────────────────────────────────────────────
+// 6. PDF generation
+// ─────────────────────────────────────────────────────────────
+
 /**
- * פירוט עלויות מלא ל-PDF פנימי (תואם ללוח התוצאות).
- * @param {(lab: string, val: string, sub?: boolean) => void} addPdfRow
+ * Full cost breakdown for internal PDF (mirrors the result panel).
  * @param {ReturnType<typeof calc>} r
+ * @param {(lab: string, val: string, sub?: boolean) => void} addPdfRow
  */
 function renderInternalPdfCostBreakdown(r, addPdfRow) {
   addPdfRow("מתכת (" + MLBL[r.mt] + ")", fmt(r.mCost));
@@ -502,7 +533,7 @@ function renderInternalPdfCostBreakdown(r, addPdfRow) {
       const l2 = r.diaG2Ct * r.diaG2Price;
       if (l1 > 0) {
         addPdfRow(
-          "קבוצה 1 (מרכזית) · " +
+          "קבוצה 1 (אבן מרכזית) · " +
             r.diaG1Count +
             " · " +
             fmtN(r.diaG1Ct, 3) +
@@ -515,7 +546,7 @@ function renderInternalPdfCostBreakdown(r, addPdfRow) {
       }
       if (l2 > 0) {
         addPdfRow(
-          "קבוצה 2 (צדדיות) · " +
+          "קבוצה 2 (אבנות צדדיות) · " +
             r.diaG2Count +
             " · " +
             fmtN(r.diaG2Ct, 3) +
@@ -527,7 +558,7 @@ function renderInternalPdfCostBreakdown(r, addPdfRow) {
         );
       }
       if (r.diaCombinedCt > 0) {
-        addPdfRow("סה״כ משקל (Combined CT)", fmtN(r.diaCombinedCt, 3) + " קראט", true);
+        addPdfRow("סה״כ משקל כולל (קראט)", fmtN(r.diaCombinedCt, 3) + " קראט", true);
       }
     }
   }
@@ -546,7 +577,7 @@ function renderInternalPdfCostBreakdown(r, addPdfRow) {
 
   const labLines = [
     ["אריזה", r.lPack],
-    ["הדפסה", r.lc],
+    ["יציקה / הדפסה", r.lc],
     ["מודל 3D", r.lModel],
     ["ליטוש", r.lp],
     ["ציפוי", r.lr],
@@ -568,7 +599,7 @@ function buildCopyText(r) {
   lines.push("הצעת מחיר — " + jewLabel());
   if (name) lines.push("לקוח: " + name);
   lines.push("מחיר סופי: " + fmt(smartRound(r.final)));
-  lines.push("--- פנימי ---");
+  lines.push("─── פנימי ───");
   lines.push("עלות לפני רווח: " + fmt(r.sub));
   lines.push("רווח " + r.pct + "%: " + fmt(r.prof));
   const notes = ($("privateNotes").value || "").trim();
@@ -584,6 +615,7 @@ function openPdf(mode) {
     return;
   }
   const overlay = $("pdfOverlay");
+  overlay.setAttribute("data-pdf-mode", mode);
   const clientName = ($("clientName").value || "").trim() || "לקוח";
   const clientDesc = ($("clientDesc").value || "").trim();
   $("pdfTitle").textContent = jewLabel();
@@ -611,37 +643,41 @@ function openPdf(mode) {
   const rounded = smartRound(r.final);
 
   if (mode === "client") {
-    secCosts.textContent = "פרטי ההצעה";
+    secCosts.textContent = "פרטי התכשיט";
+    $("pdfInternalBanner").classList.add("hidden");
+    $("pdfBrandTitle").classList.remove("hidden");
     descEl.classList.toggle("hidden", !clientDesc);
     descEl.textContent = clientDesc;
     const addClientRow = (lab, val) => {
       const row = document.createElement("div");
       row.className = "pdf-row";
       row.innerHTML =
-        "<span class=\"pdf-row-label\">" + escapeHtml(String(lab)) + "</span><span class=\"pdf-row-value\">" + escapeHtml(String(val)) + "</span>";
+        "<span class=\"pdf-row-label\">" + escapeHtml(String(lab)) + ":</span><span class=\"pdf-row-value\">" + escapeHtml(String(val)) + "</span>";
       pdfRows.appendChild(row);
     };
     addClientRow("סוג תכשיט", jewLabel());
     addClientRow("מתכת", MLBL[r.mt]);
     // Diamond specs — only show checked items
     const clientSpecsModes = r.diaMode === "uni" ? ["uni"] : ["g1", "g2"];
-    const clientSpecsLabels = { uni: "", g1: " — קבוצה 1", g2: " — קבוצה 2" };
+    const clientSpecsLabels = { uni: "", g1: " — אבן מרכזית", g2: " — אבנות צדדיות" };
     clientSpecsModes.forEach((m) => {
       const sp = r.diamondSpecs[m];
       if (sp.clarity && sp.showInClient.clarity) addClientRow("נקיון (Clarity)" + clientSpecsLabels[m], sp.clarity);
       if (sp.color   && sp.showInClient.color)   addClientRow("צבע (Color)" + clientSpecsLabels[m], sp.color);
-      if (sp.gia     && sp.showInClient.gia)      addClientRow("תעודת GIA" + clientSpecsLabels[m], sp.gia);
+      if (sp.gia     && sp.showInClient.gia)      addClientRow("מקור תעודה" + clientSpecsLabels[m], sp.gia);
     });
     secPricing.style.display = "none";
     pdfTotals.replaceChildren();
-    $("pdfTotalLbl").textContent = "מחיר ללקוח";
+    $("pdfTotalLbl").textContent = "הצעת מחיר";
     $("pdfTotalAmt").textContent = fmt(rounded);
-    $("pdfTotalNote").textContent = "המחיר כולל עבודה ואבנים כפי שסוכם בעל פה · ללא פירוט עלויות ייצור";
+    $("pdfTotalNote").textContent = "המחיר כולל מתכת, אבנות ועבודה — ללא פירוט עלויות ייצור";
   } else {
-    secCosts.textContent = "פירוט עלויות (פנימי)";
+    secCosts.textContent = "פירוט עלויות פנימי";
+    $("pdfInternalBanner").classList.remove("hidden");
+    $("pdfBrandTitle").classList.add("hidden");
     descEl.classList.add("hidden");
     secPricing.style.display = "";
-    $("pdfTotalLbl").textContent = "מחיר סופי (מעוגל)";
+    $("pdfTotalLbl").textContent = "מחיר סופי";
     $("pdfTotalAmt").textContent = fmt(rounded);
     $("pdfTotalNote").textContent =
       Math.abs(rounded - r.final) > 0.5 ? "לפני עיגול: " + fmt(r.final) : "";
@@ -652,7 +688,7 @@ function openPdf(mode) {
       row.innerHTML =
         "<span class=\"pdf-row-label\">" +
         escapeHtml(String(lab)) +
-        "</span><span class=\"pdf-row-value\">" +
+        "</span><span class=\"pdf-row-sep\"> — </span><span class=\"pdf-row-value\">" +
         escapeHtml(String(val)) +
         "</span>";
       pdfRows.appendChild(row);
@@ -662,12 +698,12 @@ function openPdf(mode) {
 
     // Diamond specs — internal PDF: always show all, mark unchecked as internal only
     const intSpecsModes = r.diaMode === "uni" ? ["uni"] : ["g1", "g2"];
-    const intSpecsLabels = { uni: "", g1: " — קבוצה 1", g2: " — קבוצה 2" };
+    const intSpecsLabels = { uni: "", g1: " — אבן מרכזית", g2: " — אבנות צדדיות" };
     intSpecsModes.forEach((m) => {
       const sp = r.diamondSpecs[m];
       if (sp.clarity) addPdfRow("נקיון (Clarity)" + intSpecsLabels[m], sp.clarity + (sp.showInClient.clarity ? "" : " (פנימי בלבד)"), true);
       if (sp.color)   addPdfRow("צבע (Color)" + intSpecsLabels[m],   sp.color   + (sp.showInClient.color   ? "" : " (פנימי בלבד)"), true);
-      if (sp.gia)     addPdfRow("תעודת GIA" + intSpecsLabels[m],     sp.gia     + (sp.showInClient.gia     ? "" : " (פנימי בלבד)"), true);
+      if (sp.gia)     addPdfRow("מקור תעודה" + intSpecsLabels[m],     sp.gia     + (sp.showInClient.gia     ? "" : " (פנימי בלבד)"), true);
     });
 
     const pnotes = ($("privateNotes").value || "").trim();
@@ -680,7 +716,7 @@ function openPdf(mode) {
       row.innerHTML =
         "<span class=\"pdf-row-label\">" +
         escapeHtml(String(lab)) +
-        "</span><span class=\"pdf-row-value\">" +
+        "</span><span class=\"pdf-row-sep\"> — </span><span class=\"pdf-row-value\">" +
         escapeHtml(String(val)) +
         "</span>";
       pdfTotals.appendChild(row);
@@ -690,7 +726,7 @@ function openPdf(mode) {
     addTot("מחיר לפני עיגול", fmt(r.final), true);
     const diffR = rounded - r.final;
     if (Math.abs(diffR) > 0.5) {
-      addTot("הפרש עיגול (מעוגל − לפני עיגול)", fmt(diffR), true);
+      addTot("הפרש עיגול", fmt(diffR), true);
     }
   }
 
@@ -710,6 +746,10 @@ function setFb(msg, ok) {
   fb.className = "fb " + (ok ? "fb-ok" : "fb-sv");
   if (msg) setTimeout(() => { fb.textContent = ""; fb.className = "fb"; }, 2800);
 }
+
+// ─────────────────────────────────────────────────────────────
+// 7. Persistence — localStorage history (save / load / delete)
+// ─────────────────────────────────────────────────────────────
 
 function loadHist() {
   try {
@@ -731,7 +771,7 @@ function renderHist() {
   $("hBadge").textContent = list.length + " שמורות";
 
   if (!list.length) {
-    body.innerHTML = "<div class=\"hist-empty\">עדיין אין הצעות שמורות.<br>לחץ <strong>שמור ★</strong> אחרי חישוב.</div>";
+    body.innerHTML = "<div class=\"hist-empty\">עדיין אין הצעות שמורות.<br>לחץ <strong>שמור ★</strong> לאחר חישוב.</div>";
     return;
   }
   const wrap = document.createElement("div");
@@ -1042,6 +1082,10 @@ function updateCalcPreview() {
 }
 
 /* ── אתחול ── */
+
+// ─────────────────────────────────────────────────────────────
+// 8. Event listeners & initialisation
+// ─────────────────────────────────────────────────────────────
 
 // Populate diamond specs dropdowns
 (function initSpecsDropdowns() {

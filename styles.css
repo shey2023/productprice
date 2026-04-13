@@ -112,8 +112,7 @@ body {
 .card-hint {
   font-size: 11px;
   color: var(--text-muted);
-  margin-right: auto;
-  margin-left: 0;
+  margin-inline-start: auto;
 }
 
 /* Step dots */
@@ -507,7 +506,7 @@ select.inp { cursor: pointer; }
 }
 .total-lbl { font-size: 11px; font-weight: 600; color: var(--pink-dark); text-transform: uppercase; letter-spacing: .5px; margin-bottom: 4px; }
 .total-val { font-size: 28px; font-weight: 700; color: var(--pink-dark); }
-.total-sub { font-size: 11px; color: var(--text-muted); margin-top: 3px; }
+.total-sub { font-size: 11px; color: var(--text-muted); margin-top: 3px; text-align: start; }
 
 /* ── Action Buttons ── */
 .action-btns {
@@ -662,6 +661,17 @@ select.inp { cursor: pointer; }
 }
 .btn-clear:hover { border-color: #e74c3c; color: #e74c3c; }
 
+/* ── Internal PDF Banner ── */
+.pdf-internal-banner {
+  background: #3b1a2b;
+  color: #ffcce0;
+  font-size: 12px;
+  font-weight: 600;
+  text-align: center;
+  padding: 7px 16px;
+  letter-spacing: .3px;
+}
+
 /* ── PDF Overlay ── */
 .pdf-overlay {
   display: none;
@@ -707,7 +717,7 @@ select.inp { cursor: pointer; }
 }
 .pdf-client { font-size: 16px; font-weight: 700; color: var(--text); }
 .pdf-subtitle { font-size: 12px; color: var(--text-muted); margin-top: 3px; }
-.pdf-meta-left { text-align: left; }
+.pdf-meta-left { text-align: end; }
 .pdf-date { font-size: 11px; color: var(--text-muted); }
 .pdf-quote-num { font-size: 11px; color: var(--text-muted); margin-top: 2px; }
 
@@ -793,9 +803,11 @@ button:focus-visible, input:focus-visible, select:focus-visible, textarea:focus-
 /* ── Print ── */
 @media print {
   .app-brand, .form-col, .hist-outer, .sticky-calc, .install-banner,
-  .pdf-actions, .pdf-footer { display: none !important; }
+  .pdf-actions, .pdf-footer, .result-col { display: none !important; }
   .pdf-overlay { position: static; background: none; padding: 0; }
   .pdf-doc { box-shadow: none; max-width: 100%; }
+  /* When printing internal PDF, hide the internal banner for cleaner output */
+  .pdf-internal-banner { display: none !important; }
 }
 
 /* ══════════════════════════════════════════════════════════════ */
@@ -963,60 +975,148 @@ button:focus-visible, input:focus-visible, select:focus-visible, textarea:focus-
   .diamond-specs-section { padding: 12px; }
 }
 
+/* ── Result Breakdown Rows ── */
+.brow {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 2px 0;
+}
+.brow.sub {
+  padding-inline-end: 0;
+  padding-inline-start: 14px;
+  opacity: .85;
+}
+.brow-l {
+  flex: 1;
+  color: var(--text-sub);
+  font-size: 12px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.brow-v {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text);
+  white-space: nowrap;
+}
+.brow-v.cost    { color: var(--text); }
+.brow-v.profit-val { color: #27500A; }
+.brow-v.normal  { color: var(--text-sub); }
+.brow-v.specs-header { font-weight: 700; font-size: 11px; color: var(--pink-dark); text-transform: uppercase; letter-spacing: .4px; }
+.brow-dot {
+  display: inline-block;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
 
+/* Price-rounding inline badge */
+.rounded-badge {
+  display: block;
+  font-size: 11px;
+  font-weight: 400;
+  color: var(--text-muted);
+  margin-top: 3px;
+}
 
+/* Ring-calc preview pill */
+.prev-pill {
+  font-size: 12px;
+  color: var(--text-sub);
+}
 
+/* ── History Cards ── */
+.hist-list { display: flex; flex-direction: column; gap: 10px; }
 
+.hcard {
+  background: var(--surface);
+  border: 1px solid var(--border-soft);
+  border-radius: var(--r);
+  padding: 12px 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.hcard-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+.hcard-name { font-size: 13px; font-weight: 600; color: var(--text); }
+.hcard-date { font-size: 11px; color: var(--text-muted); }
+.hcard-type { font-size: 12px; color: var(--text-sub); }
+.hcard-price { font-size: 15px; font-weight: 700; color: var(--pink-dark); margin-top: 2px; }
+.hcard-note { font-size: 11px; color: var(--text-muted); font-style: italic; }
+.hcard-ac {
+  display: flex;
+  gap: 8px;
+  margin-top: 6px;
+}
+.btn-hl, .btn-hd {
+  padding: 5px 12px;
+  border-radius: var(--rs);
+  font-family: inherit;
+  font-size: 12px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all .15s;
+}
+.btn-hl {
+  background: var(--pink-light);
+  border: 1.5px solid #f0d8e4;
+  color: var(--pink-dark);
+}
+.btn-hl:hover { background: var(--pink); color: #fff; }
+.btn-hd {
+  background: none;
+  border: 1px solid var(--border);
+  color: var(--text-muted);
+}
+.btn-hd:hover { border-color: #e74c3c; color: #e74c3c; background: #fff5f5; }
 
+/* ── Gemstone Rows ── */
+.gem-row, .dyn-row {
+  display: flex;
+  gap: 6px;
+  align-items: center;
+}
+.gem-label, .dyn-label { flex: 2; }
+.gem-cnt, .gem-car, .gem-prc, .dyn-amt { flex: 1; }
 
+/* Remove button */
+.btn-rm {
+  flex-shrink: 0;
+  background: none;
+  border: 1px solid var(--border);
+  border-radius: var(--rs);
+  color: var(--text-muted);
+  font-size: 16px;
+  line-height: 1;
+  padding: 4px 8px;
+  cursor: pointer;
+  transition: all .15s;
+}
+.btn-rm:hover { border-color: #e74c3c; color: #e74c3c; background: #fff5f5; }
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+/* ── PDF Rows ── */
+.pdf-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 8px;
+  padding: 3px 0;
+}
+.pdf-row.sub {
+  padding-inline-start: 12px;
+  opacity: .85;
+}
+.pdf-row-label { flex: 1; color: var(--text-sub); }
+.pdf-row-sep { color: var(--text-muted); flex-shrink: 0; padding: 0 2px; }
+.pdf-row-value { font-weight: 600; color: var(--text); white-space: nowrap; }
 
 
 
