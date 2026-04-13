@@ -1,6 +1,6 @@
 /**
  * מחשבון הצעת מחיר לתכשיט — לוגיקה פנימית.
- * PDF ללקוח: ללא פירוט עלויות — רק תיאור (אופציונלי) ומחיר סופי.
+ * PDF ללקוח: ללא פירוט עלויות — רק תיאור (אופציונלי) ומחיר ללקוח.
  * PDF פנימי: פירוט מלא של עלויות, רווח ומחיר מעוגל.
  *
  * Sections:
@@ -490,7 +490,7 @@ function renderRes(r) {
 
   const rounded = smartRound(r.final);
   const diff = rounded - r.final;
-  $("totalLbl").textContent = "מחיר סופי";
+  $("totalLbl").textContent = "מחיר ללקוח";
   $("totalVal").textContent = fmt(rounded);
   if (Math.abs(diff) > 0.5) {
     $("totalSub").textContent = "לפני עיגול: " + fmt(r.final);
@@ -598,7 +598,7 @@ function buildCopyText(r) {
   const lines = [];
   lines.push("הצעת מחיר — " + jewLabel());
   if (name) lines.push("לקוח: " + name);
-  lines.push("מחיר סופי: " + fmt(smartRound(r.final)));
+  lines.push("מחיר ללקוח: " + fmt(smartRound(r.final)));
   lines.push("─── פנימי ───");
   lines.push("עלות לפני רווח: " + fmt(r.sub));
   lines.push("רווח " + r.pct + "%: " + fmt(r.prof));
@@ -1181,9 +1181,14 @@ const manifest = {
   dir: "rtl",
   icons: [
     {
-      src: "images/Red-Symbol.svg",
-      sizes: "any",
-      type: "image/svg+xml",
+      src: "icon.png",
+      sizes: "192x192",
+      type: "image/png",
+    },
+    {
+      src: "icon.png",
+      sizes: "512x512",
+      type: "image/png",
     },
   ],
 };
